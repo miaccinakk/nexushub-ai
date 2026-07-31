@@ -72,16 +72,16 @@ body {
 
 /* ===== Application document (print-optimized) ===== */
 .app-doc {
-  /* premium editorial palette, isolated from the app's purple brand */
-  --paper: #fbfaf7;
-  --ink: #1a1613;
-  --ink-soft: #4a443c;
-  --muted: #857d70;
-  --hairline: #e6e0d6;
-  --accent: #a56b28;
-  --accent-soft: #f3ead9;
+  /* clean, minimal Luma-style palette, isolated from the app's purple brand */
+  --paper: #ffffff;
+  --ink: #18181b;
+  --ink-soft: #52525b;
+  --muted: #a1a1aa;
+  --hairline: #ececeb;
+  --accent: #b47e2b;
+  --accent-soft: #f7f1e4;
   color: var(--ink);
-  background-color: #eceae5;
+  background-color: #f4f4f2;
 }
 
 .doc-sheet {
