@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2, Wand2 } from "lucide-react"
+import { Loader2, Wand2, Sparkles } from "lucide-react"
 import type { CompanyInput } from "@/lib/types"
 
 interface Field {
@@ -27,6 +27,13 @@ const FIELDS: Field[] = [
     key: "businessGoals",
     label: "Business goals",
     placeholder: "What is the company trying to achieve?",
+    type: "textarea",
+    full: true,
+  },
+  {
+    key: "links",
+    label: "Business links (optional)",
+    placeholder: "One per line — website, LinkedIn, X, deck, press, docs…",
     type: "textarea",
     full: true,
   },
@@ -88,6 +95,24 @@ export function CompanyForm({ input, onChange, onSubmit, loading }: CompanyFormP
             )}
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 p-4">
+        <label htmlFor="guidance" className="flex items-center gap-1.5 text-xs font-medium text-primary">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+          AI assistant prompt
+        </label>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Steer the assistant: set tone, language, audience, angle or anything it must follow.
+        </p>
+        <textarea
+          id="guidance"
+          value={input.guidance}
+          onChange={(e) => update("guidance", e.target.value)}
+          placeholder="e.g. Confident, premium tone for founders & investors. Write in English. Focus on AI-first positioning and avoid hype."
+          rows={3}
+          className={`mt-2 ${inputClass} resize-none`}
+        />
       </div>
 
       <button

@@ -24,6 +24,8 @@ export default async function CompanyAnalysisPage({ params }: { params: Promise<
     productDescription: company.productDescription,
     businessGoals: company.businessGoals,
     additionalInfo: company.additionalInfo,
+    links: company.website ? `https://${company.website}` : "",
+    guidance: "",
   }
 
   return (

@@ -9,6 +9,7 @@ export async function POST(request: Request) {
       kind: "section" | "content"
       task: string
       input: CompanyInput
+      instructions?: string
     }
 
     if (!body?.task || !body?.input) {
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
     const prompt =
       body.kind === "content"
-        ? buildContentPrompt(body.input, body.task)
+        ? buildContentPrompt(body.input, body.task, body.instructions)
         : buildSectionPrompt(body.input, body.task)
 
     const text = await generateAIResponse(prompt)

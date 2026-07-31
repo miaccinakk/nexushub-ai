@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Linkedin, Mail, CalendarDays, Twitter, Lightbulb, Loader2, Sparkles } from "lucide-react"
+import { Linkedin, Mail, CalendarDays, Twitter, Lightbulb, Loader2, Sparkles, Clapperboard } from "lucide-react"
 import { CONTENT_TYPES, type ContentTypeKey, type CompanyInput } from "@/lib/types"
 import { FormattedText } from "./formatted-text"
 import { CopyButton } from "./copy-button"
@@ -11,6 +11,7 @@ const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
   email: Mail,
   event: CalendarDays,
   twitter: Twitter,
+  video: Clapperboard,
   ideas: Lightbulb,
 }
 
@@ -18,6 +19,7 @@ export function ContentGenerator({ input }: { input: CompanyInput }) {
   const [activeKey, setActiveKey] = useState<ContentTypeKey | null>(null)
   const [loadingKey, setLoadingKey] = useState<ContentTypeKey | null>(null)
   const [outputs, setOutputs] = useState<Partial<Record<ContentTypeKey, string>>>({})
+  const [instructions, setInstructions] = useState("")
   const [error, setError] = useState<string | null>(null)
 
   async function generate(key: ContentTypeKey, task: string) {
@@ -28,7 +30,7 @@ export function ContentGenerator({ input }: { input: CompanyInput }) {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "content", task, input }),
+        body: JSON.stringify({ kind: "content", task, input, instructions }),
       })
       if (!res.ok) throw new Error("Request failed")
       const data = (await res.json()) as { text: string }
@@ -55,7 +57,24 @@ export function ContentGenerator({ input }: { input: CompanyInput }) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4">
+        <label htmlFor="content-instructions" className="text-xs font-medium text-muted-foreground">
+          Prompt for this generation <span className="text-muted-foreground/60">(optional)</span>
+        </label>
+        <textarea
+          id="content-instructions"
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          placeholder="e.g. Keep it under 120 words, write in Russian, hook in the first line, one clear CTA."
+          rows={2}
+          className="mt-1.5 w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pick a format below — your prompt is applied to whatever you generate.
+        </p>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {CONTENT_TYPES.map((type) => {
           const Icon = ICONS[type.key]
           const isLoading = loadingKey === type.key

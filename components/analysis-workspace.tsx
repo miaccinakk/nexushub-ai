@@ -16,6 +16,8 @@ const EMPTY_INPUT: CompanyInput = {
   productDescription: "",
   businessGoals: "",
   additionalInfo: "",
+  links: "",
+  guidance: "",
 }
 
 export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInput }) {

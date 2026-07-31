@@ -165,13 +165,52 @@ function buildMockResponse(prompt: string): string {
         `Stop patching. Start improving. 🧵👇`,
       ].join("\n")
 
+    case "video / avatar script":
+      return [
+        `[HOOK — 0:00-0:03]`,
+        `"${industry} teams in ${market} are losing hours every week — and most don't even see it."`,
+        ``,
+        `[PROBLEM — 0:03-0:12]`,
+        `Legacy tooling is slow, disconnected, and hard to trust. That means stale data and decisions made too late.`,
+        ``,
+        `[SOLUTION — 0:12-0:25]`,
+        `That's why we built ${company}: outcomes in weeks not quarters, enterprise-grade security by default, and it plugs into the stack you already run.`,
+        ``,
+        `[PROOF — 0:25-0:32]`,
+        `Early teams saw measurable impact inside the first month — no rip-and-replace.`,
+        ``,
+        `[CTA — 0:32-0:35]`,
+        `"Want to see it on your workflow? Link's below."`,
+        ``,
+        `On-screen text: ${company} · outcomes, not overhead. B-roll: dashboard in action, happy team.`,
+      ].join("\n")
+
     default:
       return `AI response for ${company} in the ${industry} sector targeting ${market}. Replace lib/ai.ts with a real model to generate live output.`
   }
 }
 
+/**
+ * Pulls the user's custom instructions out of the prompt so the MOCK can
+ * visibly acknowledge them. A real model would simply obey them inline and
+ * this helper would no longer be needed.
+ */
+function extractInstructions(prompt: string): string {
+  const marker = "[CUSTOM INSTRUCTIONS — follow these closely]"
+  const idx = prompt.indexOf(marker)
+  if (idx === -1) return ""
+  return prompt.slice(idx + marker.length).trim()
+}
+
 export async function generateAIResponse(prompt: string): Promise<string> {
   // Simulated network/model latency for a realistic demo experience.
   await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS))
-  return buildMockResponse(prompt)
+
+  const base = buildMockResponse(prompt)
+  const instructions = extractInstructions(prompt)
+  if (!instructions) return base
+
+  // Demo-only: show that the custom prompt was received and applied.
+  // A real model bakes these instructions directly into `base`.
+  return `${base}\n\n— Applied your instructions: ${instructions.replace(/\s*\n\s*/g, " ")}`
 }
