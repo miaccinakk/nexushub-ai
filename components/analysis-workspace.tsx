@@ -18,6 +18,7 @@ const EMPTY_INPUT: CompanyInput = {
   additionalInfo: "",
   links: "",
   guidance: "",
+  language: "Auto",
 }
 
 export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInput }) {
