@@ -26,7 +26,21 @@ export interface CompanyInput {
   links: string
   /** Custom AI prompt / instructions that steer tone, language, focus and constraints. */
   guidance: string
+  /** Response language. "Auto" lets the model match the input language. */
+  language: string
 }
+
+export const LANGUAGES = [
+  "Auto",
+  "English",
+  "Russian",
+  "Arabic",
+  "Spanish",
+  "French",
+  "German",
+  "Portuguese",
+  "Chinese",
+] as const
 
 export const ANALYSIS_SECTIONS = [
   { key: "market-overview", task: "Market Overview", title: "Market Overview" },
