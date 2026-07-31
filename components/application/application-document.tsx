@@ -109,29 +109,38 @@ function PortfolioItem({
   )
 }
 
-function PlanWeek({
-  week,
+function PlanPhase({
+  step,
   title,
+  note,
   points,
 }: {
-  week: string
+  step: string
   title: string
+  note?: string
   points: string[]
 }) {
   return (
     <div className="doc-break-avoid flex gap-5 border-t pt-5" style={{ borderColor: "var(--hairline)" }}>
-      <div className="w-12 shrink-0">
-        <span
-          className="text-[11px] font-medium uppercase tracking-[0.14em]"
-          style={{ color: "var(--accent)" }}
-        >
-          {week}
+      <div className="w-8 shrink-0">
+        <span className="font-serif text-xl" style={{ color: "var(--accent)" }}>
+          {step}
         </span>
       </div>
       <div className="flex-1">
-        <h3 className="font-serif text-base" style={{ color: "var(--ink)" }}>
-          {title}
-        </h3>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h3 className="font-serif text-base" style={{ color: "var(--ink)" }}>
+            {title}
+          </h3>
+          {note ? (
+            <span
+              className="text-[11px] font-medium uppercase tracking-[0.12em]"
+              style={{ color: "var(--muted)" }}
+            >
+              {note}
+            </span>
+          ) : null}
+        </div>
         <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
           {points.map((p) => (
             <li key={p} className="flex gap-2.5">
@@ -346,70 +355,55 @@ export function ApplicationDocument() {
         <section className="doc-page-break mt-12">
           <SectionTitle
             kicker="План на первый месяц в Legends"
-            title="Сначала система и повторяемость — потом объём"
+            title="Сначала разобраться, потом строить"
           />
 
-          <div className="mt-2 grid gap-0">
-            <PlanWeek
-              week="Нед. 1"
-              title="Аудит и фундамент"
-              points={[
-                "Разбор текущих каналов: LinkedIn (founders + brand), X, YouTube — tone of voice, конкуренты.",
-                "Фиксирую базовые метрики: охваты, engagement, точки роста.",
-                "Собираю контент-репозиторий и первую библиотеку промптов.",
-              ]}
-            />
-            <PlanWeek
-              week="Нед. 2"
-              title="Текстовые пайплайны и автопостинг"
-              points={[
-                "Разворачиваю AI-пайплайны для постов founders на LinkedIn / X: авто-ресёрч + черновики через LLM.",
-                "Настраиваю автопостинг и расписание.",
-                "Документирую промпты как повторяемые процессы, а не одноразовые скрипты.",
-              ]}
-            />
-            <PlanWeek
-              week="Нед. 3"
-              title="Видео и визуал"
-              points={[
-                "Запускаю AI-video пайплайн: промо мероприятий, аватары, короткие ролики.",
-                "Шаблоны баннеров и презентаций под еженедельные Speaker events.",
-                "Первый повторяемый процесс упаковки спикеров под Demo Day (питч, промо, aftermovie).",
-              ]}
-            />
-            <PlanWeek
-              week="Нед. 4"
-              title="Дистрибуция, метрики, команда"
-              points={[
-                "Регулярный поток по всем каналам + кросс-канальная координация.",
-                "Дашборд метрик: охват / engagement / рост, еженедельное ретро.",
-                "План найма под-команды: AI-специалист и community / social manager.",
-              ]}
-            />
-          </div>
+          <p className="mb-7 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            Я не берусь сразу всё переделывать — так делать неправильно. Сначала как специалист
+            смотрю, что уже есть и как это работает, и только потом намечаю roadmap. Сделать всё сразу
+            невозможно, поэтому глобальный план можно обозначить, но начинаю с первоочередного.
+          </p>
 
-          <div
-            className="doc-break-avoid mt-8 grid gap-6 border-t pt-6 sm:grid-cols-3"
-            style={{ borderColor: "var(--hairline)" }}
-          >
-            <div>
-              <Kicker>Приоритет каналов</Kicker>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                LinkedIn (personal founders + brand) — №1, далее X и YouTube.
-              </p>
-            </div>
-            <div>
-              <Kicker>Типы контента</Kicker>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                Короткие экспертные посты, AI-видео и аватары, упаковка спикеров и Demo Days.
-              </p>
-            </div>
-            <div>
-              <Kicker>Как измеряю</Kicker>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                Охват и engagement по каналам, скорость и объём output пайплайнов.
-              </p>
-            </div>
+          <div className="grid gap-0">
+            <PlanPhase
+              step="1"
+              title="Оценка того, что есть"
+              note="Старт"
+              points={[
+                "Разбираюсь, как устроена работа компании: детали, нюансы, кто за что отвечает.",
+                "Смотрю, какие инструменты и каналы уже используются и что из этого работает.",
+                "Даю честную оценку текущего состояния — сильные места и где теряется время.",
+              ]}
+            />
+            <PlanPhase
+              step="2"
+              title="Первоначальный roadmap"
+              note="На базе оценки"
+              points={[
+                "Обозначаю глобальный roadmap, но фокус — на первоочередных, реально нужных бизнесу задачах.",
+                "Первая часть: то, что нужно бизнесу сейчас — генерация контента, инструменты, чтобы всё это можно было поддерживать, и аналитика.",
+                "Приоритеты расставляю по факту, а не заранее из головы — после того как разберусь в п.1.",
+              ]}
+            />
+            <PlanPhase
+              step="3"
+              title="Разработка и улучшение инструментов"
+              note="~1 месяц"
+              points={[
+                "Вторая, более глубокая часть roadmap: разработка новых и улучшение уже имеющихся инструментов.",
+                "Ориентировочно это занимает около месяца — от простого рабочего варианта к более удобному.",
+                "Всё, что делаю, оформляю как повторяемый процесс, а не разовое действие.",
+              ]}
+            />
+            <PlanPhase
+              step="4"
+              title="Постоянная доработка"
+              note="Дальше"
+              points={[
+                "Дальше — постоянно смотрю на инструменты, улучшаю их и качество результата.",
+                "Ориентируюсь на реальные метрики каналов и на то, сколько работает без моего участия.",
+              ]}
+            />
           </div>
         </section>
 
