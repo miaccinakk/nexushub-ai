@@ -3,9 +3,9 @@ import { ApplicationDocument } from "@/components/application/application-docume
 import { PrintButton } from "@/components/application/print-button"
 
 export const metadata: Metadata = {
-  title: "Руслан Моцин — отклик на вакансию Head of Content, Legends",
+  title: "Руслан Мотин — отклик на вакансию Head of Content, Legends",
   description:
-    "Отклик на вакансию Head of Content в Legends: живой прототип content-factory, AI-стек, портфолио и план на первый месяц.",
+    "Отклик на вакансию Head of Content в Legends: живой прототип content-фабрики, AI-стек, портфолио и план на первый месяц.",
 }
 
 export default function ApplicationPage() {

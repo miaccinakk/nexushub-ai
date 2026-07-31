@@ -2,51 +2,35 @@ import type React from "react"
 import {
   ArrowUpRight,
   Sparkles,
-  Cpu,
-  Layers,
-  CalendarRange,
-  Workflow,
-  Video,
-  BarChart3,
-  Mail,
   Send,
-  Linkedin,
+  Mail,
   Phone,
+  Linkedin,
   Globe,
 } from "lucide-react"
 
-// Замените на реальный домен после публикации (Publish → Vercel).
-const PROTOTYPE_URL = "https://nexushub-ai.vercel.app"
-const PROTOTYPE_LABEL = "nexushub-ai.vercel.app"
+// Ссылка на живой прототип (Railway).
+const PROTOTYPE_URL = "https://nexushub-ai-production.up.railway.app"
+const PROTOTYPE_LABEL = "nexushub-ai-production.up.railway.app"
 
-function SectionTitle({
-  icon,
-  kicker,
-  title,
-}: {
-  icon: React.ReactNode
-  kicker: string
-  title: string
-}) {
+function Kicker({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 flex items-center gap-3">
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-        style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}
-      >
-        {icon}
-      </span>
-      <div className="flex flex-col">
-        <span
-          className="text-[11px] font-medium uppercase tracking-[0.18em]"
-          style={{ color: "var(--accent)" }}
-        >
-          {kicker}
-        </span>
-        <h2 className="font-serif text-xl leading-tight" style={{ color: "var(--ink)" }}>
-          {title}
-        </h2>
-      </div>
+    <p
+      className="text-[11px] font-medium uppercase tracking-[0.18em]"
+      style={{ color: "var(--muted)" }}
+    >
+      {children}
+    </p>
+  )
+}
+
+function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
+  return (
+    <div className="mb-5">
+      <Kicker>{kicker}</Kicker>
+      <h2 className="mt-1.5 font-serif text-2xl leading-tight" style={{ color: "var(--ink)" }}>
+        {title}
+      </h2>
     </div>
   )
 }
@@ -62,33 +46,28 @@ function Automation({
   solution: string
   output: string
 }) {
+  const rows: [string, string][] = [
+    ["Задача", task],
+    ["Решение", solution],
+    ["Output", output],
+  ]
   return (
-    <div
-      className="doc-break-avoid rounded-xl border p-5"
-      style={{ borderColor: "var(--hairline)", backgroundColor: "#fff" }}
-    >
+    <div className="doc-break-avoid border-t pt-5" style={{ borderColor: "var(--hairline)" }}>
       <h3 className="font-serif text-lg" style={{ color: "var(--ink)" }}>
         {title}
       </h3>
       <dl className="mt-3 grid gap-2 text-sm leading-relaxed">
-        <div className="flex gap-2">
-          <dt className="w-24 shrink-0 font-medium" style={{ color: "var(--accent)" }}>
-            Задача
-          </dt>
-          <dd style={{ color: "var(--ink-soft)" }}>{task}</dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="w-24 shrink-0 font-medium" style={{ color: "var(--accent)" }}>
-            Решение
-          </dt>
-          <dd style={{ color: "var(--ink-soft)" }}>{solution}</dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="w-24 shrink-0 font-medium" style={{ color: "var(--accent)" }}>
-            Output
-          </dt>
-          <dd style={{ color: "var(--ink-soft)" }}>{output}</dd>
-        </div>
+        {rows.map(([term, desc]) => (
+          <div key={term} className="flex gap-3">
+            <dt
+              className="w-20 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em]"
+              style={{ color: "var(--muted)" }}
+            >
+              {term}
+            </dt>
+            <dd style={{ color: "var(--ink-soft)" }}>{desc}</dd>
+          </div>
+        ))}
       </dl>
     </div>
   )
@@ -109,7 +88,7 @@ function PortfolioItem({
 }) {
   return (
     <div
-      className="doc-break-avoid border-b py-4 last:border-b-0"
+      className="doc-break-avoid border-b py-4 first:border-t"
       style={{ borderColor: "var(--hairline)" }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -140,24 +119,25 @@ function PlanWeek({
   points: string[]
 }) {
   return (
-    <div className="doc-break-avoid flex gap-4">
-      <div className="flex flex-col items-center">
+    <div className="doc-break-avoid flex gap-5 border-t pt-5" style={{ borderColor: "var(--hairline)" }}>
+      <div className="w-12 shrink-0">
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-serif text-sm"
-          style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}
+          className="text-[11px] font-medium uppercase tracking-[0.14em]"
+          style={{ color: "var(--accent)" }}
         >
           {week}
         </span>
-        <span className="mt-1 w-px flex-1" style={{ backgroundColor: "var(--hairline)" }} />
       </div>
-      <div className="pb-5">
+      <div className="flex-1">
         <h3 className="font-serif text-base" style={{ color: "var(--ink)" }}>
           {title}
         </h3>
-        <ul className="mt-1.5 grid gap-1 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+        <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
           {points.map((p) => (
-            <li key={p} className="flex gap-2">
-              <span style={{ color: "var(--accent)" }}>—</span>
+            <li key={p} className="flex gap-2.5">
+              <span aria-hidden="true" style={{ color: "var(--muted)" }}>
+                —
+              </span>
               <span>{p}</span>
             </li>
           ))}
@@ -171,44 +151,39 @@ export function ApplicationDocument() {
   return (
     <div className="app-doc min-h-screen w-full px-4 py-10 font-sans">
       <article
-        className="doc-sheet rounded-2xl px-8 py-10 shadow-xl sm:px-12 sm:py-14"
-        style={{ boxShadow: "0 20px 60px rgba(26,22,19,0.12)" }}
+        className="doc-sheet rounded-2xl border px-8 py-10 sm:px-14 sm:py-16"
+        style={{ borderColor: "var(--hairline)", boxShadow: "0 1px 3px rgba(24,24,27,0.04)" }}
       >
         {/* Header */}
         <header className="doc-break-avoid">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+          <Kicker>Отклик на вакансию · Legends</Kicker>
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-6">
             <div>
-              <p
-                className="text-[11px] font-medium uppercase tracking-[0.22em]"
-                style={{ color: "var(--accent)" }}
-              >
-                Отклик на вакансию · Legends
-              </p>
-              <h1 className="mt-2 font-serif text-4xl leading-none" style={{ color: "var(--ink)" }}>
-                Руслан Моцин
+              <h1 className="font-serif text-4xl leading-none" style={{ color: "var(--ink)" }}>
+                Руслан Мотин
               </h1>
-              <p className="mt-2 text-base" style={{ color: "var(--ink-soft)" }}>
-                Head of Content / AI Content Systems
+              <p className="mt-3 text-base" style={{ color: "var(--ink-soft)" }}>
+                Head of Content · AI Content Systems
               </p>
-              <p className="mt-1 font-serif text-sm italic" style={{ color: "var(--muted)" }}>
-                Building AI content systems end-to-end — not just using the tools.
+              <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+                Строю AI-системы для контента под ключ — не просто пользуюсь инструментами.
               </p>
             </div>
             <ul className="grid gap-1.5 text-sm" style={{ color: "var(--ink-soft)" }}>
               <li className="flex items-center gap-2">
-                <Send className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} aria-hidden="true" />
+                <Send className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} aria-hidden="true" />
                 <span>@monkrizi</span>
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} aria-hidden="true" />
+                <Mail className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} aria-hidden="true" />
                 <span>krizis12@mail.ru</span>
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} aria-hidden="true" />
+                <Phone className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} aria-hidden="true" />
                 <span>+375 29 896-60-76</span>
               </li>
               <li className="flex items-center gap-2">
-                <Linkedin className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} aria-hidden="true" />
+                <Linkedin className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} aria-hidden="true" />
                 <a
                   href="https://www.linkedin.com/in/ruslan-motsin-407086271/"
                   className="doc-link"
@@ -222,30 +197,28 @@ export function ApplicationDocument() {
           </div>
         </header>
 
-        <div className="my-8 h-px w-full" style={{ backgroundColor: "var(--hairline)" }} />
-
         {/* Hero — Live prototype */}
         <section
-          className="doc-break-avoid overflow-hidden rounded-2xl"
+          className="doc-break-avoid mt-10 overflow-hidden rounded-2xl"
           style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}
         >
-          <div className="px-7 py-8 sm:px-9 sm:py-9">
+          <div className="px-7 py-8 sm:px-10 sm:py-10">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" style={{ color: "#e6b56a" }} aria-hidden="true" />
+              <Sparkles className="h-4 w-4" style={{ color: "#d9ad63" }} aria-hidden="true" />
               <span
-                className="text-[11px] font-medium uppercase tracking-[0.2em]"
-                style={{ color: "#e6b56a" }}
+                className="text-[11px] font-medium uppercase tracking-[0.18em]"
+                style={{ color: "#d9ad63" }}
               >
                 Живой прототип · собран под эту вакансию
               </span>
             </div>
             <h2 className="mt-4 font-serif text-3xl leading-tight text-balance">
-              NexusHub AI — рабочий прототип content-factory
+              NexusHub AI — рабочий прототип content-фабрики
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: "#cfc8bd" }}>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: "#c9c9cf" }}>
               Небольшой, но полностью рабочий пример того, что можно построить внутри Legends.
-              Выбираете компанию → система анализирует её → генерирует контент (сейчас — посты) на
-              нужном языке. Это ядро, вокруг которого дальше собирается вся фабрика контента.
+              Выбираете компанию → система анализирует её данные → заранее готовит контент (сейчас —
+              посты) на нужном языке. Это ядро, вокруг которого дальше собирается вся фабрика контента.
             </p>
 
             <a
@@ -253,103 +226,90 @@ export function ApplicationDocument() {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center gap-3 rounded-full px-6 py-3 text-base font-semibold transition-transform hover:-translate-y-0.5"
-              style={{ backgroundColor: "#e6b56a", color: "#1a1613" }}
+              style={{ backgroundColor: "#d9ad63", color: "#18181b" }}
             >
               Открыть прототип
               <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
             </a>
-            <p className="mt-3 text-sm" style={{ color: "#e6b56a" }}>
+            <p className="mt-3 text-sm" style={{ color: "#d9ad63" }}>
               {PROTOTYPE_LABEL}
             </p>
 
             <div
-              className="mt-6 rounded-xl border px-5 py-4 text-sm leading-relaxed"
-              style={{ borderColor: "rgba(230,181,106,0.3)", color: "#cfc8bd" }}
+              className="mt-6 border-t pt-4 text-sm leading-relaxed"
+              style={{ borderColor: "rgba(255,255,255,0.14)", color: "#c9c9cf" }}
             >
               <span className="font-medium" style={{ color: "var(--paper)" }}>
                 Куда это масштабируется:{" "}
               </span>
-              video/image-пайплайны (Sora, Runway, Higgsfield), автопостинг по каналам,
-              персонализированная генерация под спикера и — на перспективу — внутренняя LLM,
-              дообученная под бренд и tone of voice Legends.
+              подключение AI-моделей для video/image-генерации, автопостинг по каналам,
+              персонализация под спикера и — на перспективу — внутренняя LLM, дообученная под бренд
+              и tone of voice Legends.
             </div>
           </div>
         </section>
 
         {/* Positioning */}
-        <section className="doc-break-avoid mt-9">
-          <SectionTitle
-            icon={<Cpu className="h-4 w-4" aria-hidden="true" />}
-            kicker="Почему я"
-            title="Строю системы, а не просто произвожу контент"
-          />
+        <section className="doc-break-avoid mt-12">
+          <SectionTitle kicker="Почему я" title="Строю системы, а не просто произвожу контент" />
           <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-            Я — full-stack разработчик с опытом 9+ лет, который последние 2 года строит AI-продукты
-            и автоматизации. Для роли Head of Content это значит редкое сочетание: content factory я
-            могу собрать технически под ключ — от пайплайнов генерации и автопостинга до дашбордов
-            аналитики — и одновременно дирижировать этим как системой, постоянно её улучшая. Не
-            «пользовался ChatGPT», а shipped-продукты с AI внутри, в проде, с реальными пользователями.
+            Я — full-stack разработчик, который последние годы строит AI-продукты и автоматизации в
+            проде. Для роли Head of Content это редкое сочетание: контент-фабрику я могу собрать
+            технически под ключ — от пайплайнов генерации и автопостинга до дашбордов аналитики — и
+            одновременно управлять ей как системой, постоянно улучшая. Прототип NexusHub AI выше —
+            прямое доказательство подхода: это не «поигрался с ChatGPT», а рабочая система, собранная
+            специально под эту задачу.
           </p>
         </section>
 
         {/* AI stack + automations */}
-        <section className="mt-9">
-          <SectionTitle
-            icon={<Workflow className="h-4 w-4" aria-hidden="true" />}
-            kicker="AI-стек и автоматизации"
-            title="Инструменты и shipped-примеры"
-          />
+        <section className="mt-12">
+          <SectionTitle kicker="AI-стек и автоматизации" title="Инструменты и рабочие примеры" />
 
-          <div
-            className="doc-break-avoid mb-5 rounded-xl border p-4 text-sm leading-relaxed"
-            style={{ borderColor: "var(--hairline)", backgroundColor: "var(--accent-soft)" }}
-          >
+          <p className="mb-6 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
             <span className="font-medium" style={{ color: "var(--ink)" }}>
-              Стек:{" "}
+              Руками:{" "}
             </span>
-            <span style={{ color: "var(--ink-soft)" }}>
-              LLM — Claude, GPT · видео/фото — Sora, Runway, Higgsfield · голос — ElevenLabs ·
-              автоматизация — n8n, Zapier, кастомные API-пайплайны · разработка — Cursor, Next.js,
-              Node.js, PostgreSQL.
+            GPT / ChatGPT для текста и ресёрча, AI-генераторы изображений, Cursor для разработки.{" "}
+            <span className="font-medium" style={{ color: "var(--ink)" }}>
+              В систему подключаю:{" "}
             </span>
-          </div>
+            LLM-пайплайны через API, автоматизацию процессов и — по мере роста задач — модели для
+            видео/изображений (Sora, Runway, Higgsfield) и голоса (ElevenLabs).
+          </p>
 
-          <div className="grid gap-4">
+          <div className="grid gap-5">
             <Automation
               title="NexusHub AI — пайплайн «анализ компании → контент» (этот прототип)"
               task="Убрать ручной ресёрч и написание постов под каждую компанию."
-              solution="Ввод данных о компании → анализ → генерация постов через LLM с выбором языка."
+              solution="Ввод данных о компании → анализ → генерация постов через LLM с выбором языка. Заложена возможность подключать разные AI-модели."
               output="Готовый пост за секунды вместо часа ручной работы; от ввода до результата — без участия человека."
             />
             <Automation
-              title="AI4Car — AI-диагностика с биллингом и лимитами"
-              task="Масштабируемая AI-функциональность с автономными лимитами и подписками."
-              solution="AI Helper, расшифровка ошибок, live quota tracking, SSE-уведомления, подписки, крипто-платежи."
-              output="Usage limits и subscription logic работают полностью автономно 24/7, без ручного контроля."
+              title="AI4Car — AI-диагностика с автономным биллингом и лимитами"
+              task="Масштабируемая AI-функция с автономными лимитами и подписками, без ручного контроля."
+              solution="AI Helper и расшифровка ошибок, live quota tracking, SSE-уведомления, подписки, платежи."
+              output="Логика лимитов и подписок работает полностью автономно 24/7 — без участия человека."
             />
             <Automation
-              title="Автодор — авто-генерация документов + Data Mapper"
-              task="Убрать ручное создание документов и нормализацию данных в CRM."
-              solution="Workflow генерации/редактирования документов + инструмент нормализации данных в PostgreSQL."
+              title="Автодор — авто-генерация документов и нормализация данных"
+              task="Убрать ручное создание документов и приведение данных в порядок внутри CRM."
+              solution="Workflow генерации/редактирования документов + инструмент нормализации данных в PostgreSQL (Data Mapper)."
               output="Документы и миграция данных собираются процессом, а не руками."
             />
           </div>
         </section>
 
         {/* Portfolio */}
-        <section className="mt-9">
-          <SectionTitle
-            icon={<Layers className="h-4 w-4" aria-hidden="true" />}
-            kicker="Портфолио"
-            title="Shipped-работы с контекстом"
-          />
+        <section className="mt-12">
+          <SectionTitle kicker="Портфолио" title="Shipped-работы с контекстом" />
           <div>
             <PortfolioItem
               name="AI4Car"
               url="https://ai4car.app/"
               label="ai4car.app"
               stack="React · React Native · Node.js · PostgreSQL · REST API"
-              description="AI-платформа диагностики авто: полный цикл frontend/backend, AI-функционал, биллинг, admin-панель. Роль: Fullstack."
+              description="AI-платформа диагностики авто: полный цикл frontend/backend, AI-функционал, автономный биллинг, admin-панель. Роль: Fullstack."
             />
             <PortfolioItem
               name="OHI-S"
@@ -370,7 +330,7 @@ export function ApplicationDocument() {
               url="https://profiterm.by/"
               label="profiterm.by"
               stack="Nuxt 3 · Node.js · MongoDB · REST API"
-              description="Корпоративный сайт под ключ: адаптивный UI, backend, система заявок, SEO-оптимизация и production-деплой. Роль: Fullstack."
+              description="Корпоративный сайт под ключ: адаптивный UI, backend, система заявок, SEO и production-деплой. Роль: Fullstack."
             />
             <PortfolioItem
               name="Полное портфолио"
@@ -383,43 +343,42 @@ export function ApplicationDocument() {
         </section>
 
         {/* Plan — new page in print */}
-        <section className="doc-page-break mt-9">
+        <section className="doc-page-break mt-12">
           <SectionTitle
-            icon={<CalendarRange className="h-4 w-4" aria-hidden="true" />}
             kicker="План на первый месяц в Legends"
             title="Сначала система и повторяемость — потом объём"
           />
 
-          <div className="mt-2">
+          <div className="mt-2 grid gap-0">
             <PlanWeek
-              week="W1"
+              week="Нед. 1"
               title="Аудит и фундамент"
               points={[
-                "Разбор текущих каналов: LinkedIn (founders + brand), X, YouTube, Instagram — tone of voice, конкуренты.",
+                "Разбор текущих каналов: LinkedIn (founders + brand), X, YouTube — tone of voice, конкуренты.",
                 "Фиксирую базовые метрики: охваты, engagement, точки роста.",
                 "Собираю контент-репозиторий и первую библиотеку промптов.",
               ]}
             />
             <PlanWeek
-              week="W2"
+              week="Нед. 2"
               title="Текстовые пайплайны и автопостинг"
               points={[
                 "Разворачиваю AI-пайплайны для постов founders на LinkedIn / X: авто-ресёрч + черновики через LLM.",
-                "Настраиваю автопостинг и расписание через n8n / Zapier.",
-                "Документирую промпты как reproducible-процессы, а не одноразовые скрипты.",
+                "Настраиваю автопостинг и расписание.",
+                "Документирую промпты как повторяемые процессы, а не одноразовые скрипты.",
               ]}
             />
             <PlanWeek
-              week="W3"
+              week="Нед. 3"
               title="Видео и визуал"
               points={[
-                "Запускаю AI-video пайплайн: welcome-видео и аватары, промо мероприятий.",
+                "Запускаю AI-video пайплайн: промо мероприятий, аватары, короткие ролики.",
                 "Шаблоны баннеров и презентаций под еженедельные Speaker events.",
-                "Собираю первый повторяемый процесс упаковки спикеров под Demo Day (питч, промо, aftermovie).",
+                "Первый повторяемый процесс упаковки спикеров под Demo Day (питч, промо, aftermovie).",
               ]}
             />
             <PlanWeek
-              week="W4"
+              week="Нед. 4"
               title="Дистрибуция, метрики, команда"
               points={[
                 "Регулярный поток по всем каналам + кросс-канальная координация.",
@@ -430,39 +389,24 @@ export function ApplicationDocument() {
           </div>
 
           <div
-            className="doc-break-avoid mt-4 grid gap-4 rounded-xl border p-5 sm:grid-cols-3"
-            style={{ borderColor: "var(--hairline)", backgroundColor: "#fff" }}
+            className="doc-break-avoid mt-8 grid gap-6 border-t pt-6 sm:grid-cols-3"
+            style={{ borderColor: "var(--hairline)" }}
           >
             <div>
-              <div className="mb-1.5 flex items-center gap-2">
-                <Send className="h-4 w-4" style={{ color: "var(--accent)" }} aria-hidden="true" />
-                <h3 className="font-serif text-sm" style={{ color: "var(--ink)" }}>
-                  Приоритет каналов
-                </h3>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+              <Kicker>Приоритет каналов</Kicker>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                 LinkedIn (personal founders + brand) — №1, далее X и YouTube.
               </p>
             </div>
             <div>
-              <div className="mb-1.5 flex items-center gap-2">
-                <Video className="h-4 w-4" style={{ color: "var(--accent)" }} aria-hidden="true" />
-                <h3 className="font-serif text-sm" style={{ color: "var(--ink)" }}>
-                  Типы контента
-                </h3>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+              <Kicker>Типы контента</Kicker>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                 Короткие экспертные посты, AI-видео и аватары, упаковка спикеров и Demo Days.
               </p>
             </div>
             <div>
-              <div className="mb-1.5 flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" style={{ color: "var(--accent)" }} aria-hidden="true" />
-                <h3 className="font-serif text-sm" style={{ color: "var(--ink)" }}>
-                  Как измеряю
-                </h3>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+              <Kicker>Как измеряю</Kicker>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                 Охват и engagement по каналам, скорость и объём output пайплайнов.
               </p>
             </div>
@@ -471,11 +415,11 @@ export function ApplicationDocument() {
 
         {/* Footer */}
         <footer
-          className="doc-break-avoid mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6"
+          className="doc-break-avoid mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6"
           style={{ borderColor: "var(--hairline)" }}
         >
           <div className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-soft)" }}>
-            <Globe className="h-4 w-4" style={{ color: "var(--accent)" }} aria-hidden="true" />
+            <Globe className="h-4 w-4" style={{ color: "var(--muted)" }} aria-hidden="true" />
             <span>Прототип:</span>
             <a href={PROTOTYPE_URL} className="doc-link" target="_blank" rel="noopener noreferrer">
               {PROTOTYPE_LABEL}
