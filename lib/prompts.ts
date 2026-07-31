@@ -14,7 +14,20 @@ function companyContext(input: CompanyInput): string {
     `Product description: ${input.productDescription || "N/A"}`,
     `Business goals: ${input.businessGoals || "N/A"}`,
     `Additional information: ${input.additionalInfo || "N/A"}`,
+    `Business links: ${input.links?.trim() ? input.links.replace(/\s*\n\s*/g, ", ") : "N/A"}`,
   ].join("\n")
+}
+
+/**
+ * Appends the user's custom AI instructions (if any) as a high-priority
+ * directive. `extra` carries per-generation instructions for a single asset.
+ */
+function guidanceBlock(input: CompanyInput, extra?: string): string {
+  const parts: string[] = []
+  if (input.guidance?.trim()) parts.push(input.guidance.trim())
+  if (extra?.trim()) parts.push(extra.trim())
+  if (parts.length === 0) return ""
+  return ["", `[CUSTOM INSTRUCTIONS — follow these closely]`, ...parts].join("\n")
 }
 
 export function buildSectionPrompt(input: CompanyInput, task: string): string {
@@ -24,15 +37,21 @@ export function buildSectionPrompt(input: CompanyInput, task: string): string {
     `Using the company profile below, produce a concise, insightful "${task}".`,
     ``,
     companyContext(input),
-  ].join("\n")
+    guidanceBlock(input),
+  ]
+    .filter(Boolean)
+    .join("\n")
 }
 
-export function buildContentPrompt(input: CompanyInput, task: string): string {
+export function buildContentPrompt(input: CompanyInput, task: string, instructions?: string): string {
   return [
     `[TASK: ${task}]`,
     `You are an expert B2B copywriter.`,
     `Write a ready-to-use "${task}" for the company below. Keep it on-brand, specific, and persuasive.`,
     ``,
     companyContext(input),
-  ].join("\n")
+    guidanceBlock(input, instructions),
+  ]
+    .filter(Boolean)
+    .join("\n")
 }

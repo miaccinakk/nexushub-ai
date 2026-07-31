@@ -22,6 +22,10 @@ export interface CompanyInput {
   productDescription: string
   businessGoals: string
   additionalInfo: string
+  /** Extra business links: socials, decks, docs, press — one per line or comma-separated. */
+  links: string
+  /** Custom AI prompt / instructions that steer tone, language, focus and constraints. */
+  guidance: string
 }
 
 export const ANALYSIS_SECTIONS = [
@@ -42,6 +46,7 @@ export const CONTENT_TYPES = [
   { key: "email", task: "Email Outreach", label: "Email Outreach" },
   { key: "event", task: "Event Invitation", label: "Event Invitation" },
   { key: "twitter", task: "Twitter Post", label: "X / Twitter Post" },
+  { key: "video", task: "Video / Avatar Script", label: "Video / Avatar Script" },
   { key: "ideas", task: "Content Ideas", label: "Content Ideas" },
 ] as const
 
