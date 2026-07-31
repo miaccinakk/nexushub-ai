@@ -19,6 +19,16 @@ function companyContext(input: CompanyInput): string {
 }
 
 /**
+ * Forces the response language when the user picked a specific one.
+ * "Auto" (or empty) lets the model match the input language.
+ */
+function languageBlock(input: CompanyInput): string {
+  const lang = input.language?.trim()
+  if (!lang || lang === "Auto") return ""
+  return ["", `[LANGUAGE] Write the entire response in ${lang}, including headings and labels.`].join("\n")
+}
+
+/**
  * Appends the user's custom AI instructions (if any) as a high-priority
  * directive. `extra` carries per-generation instructions for a single asset.
  */
@@ -37,6 +47,7 @@ export function buildSectionPrompt(input: CompanyInput, task: string): string {
     `Using the company profile below, produce a concise, insightful "${task}".`,
     ``,
     companyContext(input),
+    languageBlock(input),
     guidanceBlock(input),
   ]
     .filter(Boolean)
@@ -50,6 +61,7 @@ export function buildContentPrompt(input: CompanyInput, task: string, instructio
     `Write a ready-to-use "${task}" for the company below. Keep it on-brand, specific, and persuasive.`,
     ``,
     companyContext(input),
+    languageBlock(input),
     guidanceBlock(input, instructions),
   ]
     .filter(Boolean)

@@ -1,7 +1,7 @@
 "use client"
 
-import { Loader2, Wand2, Sparkles } from "lucide-react"
-import type { CompanyInput } from "@/lib/types"
+import { Loader2, Wand2, Sparkles, Languages } from "lucide-react"
+import { LANGUAGES, type CompanyInput } from "@/lib/types"
 
 interface Field {
   key: keyof CompanyInput
@@ -98,12 +98,31 @@ export function CompanyForm({ input, onChange, onSubmit, loading }: CompanyFormP
       </div>
 
       <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 p-4">
-        <label htmlFor="guidance" className="flex items-center gap-1.5 text-xs font-medium text-primary">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="language" className="flex items-center gap-1.5 text-xs font-medium text-primary">
+            <Languages className="h-3.5 w-3.5" aria-hidden="true" />
+            Response language
+          </label>
+          <select
+            id="language"
+            value={input.language}
+            onChange={(e) => update("language", e.target.value)}
+            className={inputClass}
+          >
+            {LANGUAGES.map((lang) => (
+              <option key={lang} value={lang}>
+                {lang === "Auto" ? "Auto (match input)" : lang}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <label htmlFor="guidance" className="mt-4 flex items-center gap-1.5 text-xs font-medium text-primary">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           AI assistant prompt
         </label>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Steer the assistant: set tone, language, audience, angle or anything it must follow.
+          Steer the assistant: set tone, audience, angle or anything it must follow.
         </p>
         <textarea
           id="guidance"
