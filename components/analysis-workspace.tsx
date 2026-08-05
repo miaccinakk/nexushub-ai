@@ -17,6 +17,13 @@ const EMPTY_INPUT: CompanyInput = {
   businessGoals: "",
   additionalInfo: "",
   links: "",
+  excludeIndustries: "",
+  excludeRegions: "",
+  excludeSizes: "",
+  stopFactors: "",
+  mustHaveSignals: "",
+  priorityCriteria: "",
+  priorityThreshold: "",
   guidance: "",
   language: "Auto",
 }
@@ -63,11 +70,11 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to companies
+          На главную
         </Link>
         <div className="mt-3 flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
-            {input.name ? input.name : "New Company Analysis"}
+            {input.name ? input.name : "Новый анализ лида"}
           </h1>
           {input.name ? (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -92,7 +99,7 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-pretty">
-              Fill in the company details below and let AI build the full go-to-market analysis.
+              Заполни данные лида по вкладкам ниже — агент соберёт разбор с сигналами, приоритетом и текстом.
             </p>
           )}
         </div>
@@ -104,7 +111,7 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
 
       {hasRun ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold tracking-tight">AI Analysis</h2>
+          <h2 className="text-sm font-semibold tracking-tight">Разбор лида</h2>
           <AnalysisResults result={result} loading={loading} />
         </section>
       ) : null}

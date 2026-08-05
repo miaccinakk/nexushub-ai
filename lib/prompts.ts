@@ -15,6 +15,17 @@ function companyContext(input: CompanyInput): string {
     `Business goals: ${input.businessGoals || "N/A"}`,
     `Additional information: ${input.additionalInfo || "N/A"}`,
     `Business links: ${input.links?.trim() ? input.links.replace(/\s*\n\s*/g, ", ") : "N/A"}`,
+    ``,
+    `[EXCLUSIONS — hard filters, disqualify before scoring]`,
+    `Exclude industries: ${input.excludeIndustries || "N/A"}`,
+    `Exclude regions: ${input.excludeRegions || "N/A"}`,
+    `Exclude company sizes: ${input.excludeSizes || "N/A"}`,
+    `Stop-factors (if present, drop the lead, do not score): ${input.stopFactors || "N/A"}`,
+    ``,
+    `[PRIORITIZATION rules]`,
+    `Must-have signals for high priority: ${input.mustHaveSignals || "N/A"}`,
+    `Signals that raise priority: ${input.priorityCriteria || "N/A"}`,
+    `Priority threshold: ${input.priorityThreshold || "N/A"}`,
   ].join("\n")
 }
 

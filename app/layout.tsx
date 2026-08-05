@@ -19,9 +19,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: "Nexus Hub AI — Business Intelligence Assistant",
+  title: "Nexus · Lead Research",
   description:
-    "AI-powered B2B intelligence: analyze companies, build ideal customer profiles, and generate personalized outreach content in seconds.",
+    "Разбор лида по одной компании: сигналы с источниками, приоритет со стоп-факторами и готовый текст под этап и канал.",
 }
 
 export default function RootLayout({
