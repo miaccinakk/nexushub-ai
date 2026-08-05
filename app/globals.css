@@ -30,30 +30,31 @@
 :root {
   --radius: 0.75rem;
 
-  --background: oklch(0.985 0.002 270);
-  --foreground: oklch(0.22 0.01 270);
+  /* warm, slightly greenish off-white */
+  --background: oklch(0.985 0.008 130);
+  --foreground: oklch(0.24 0.02 150);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.01 270);
+  --card-foreground: oklch(0.24 0.02 150);
 
-  --muted: oklch(0.96 0.004 270);
-  --muted-foreground: oklch(0.5 0.01 270);
+  --muted: oklch(0.955 0.012 130);
+  --muted-foreground: oklch(0.5 0.02 150);
 
-  --border: oklch(0.92 0.004 270);
-  --input: oklch(0.92 0.004 270);
-  --ring: oklch(0.55 0.18 295);
+  --border: oklch(0.91 0.012 130);
+  --input: oklch(0.91 0.012 130);
+  --ring: oklch(0.52 0.09 150);
 
-  /* purple primary */
-  --primary: oklch(0.55 0.2 295);
-  --primary-foreground: oklch(0.99 0 0);
+  /* medium, muted green primary */
+  --primary: oklch(0.52 0.09 150);
+  --primary-foreground: oklch(0.99 0.01 130);
 
-  /* orange accent */
-  --accent: oklch(0.7 0.17 45);
-  --accent-foreground: oklch(0.99 0 0);
+  /* soft yellow / gold accent */
+  --accent: oklch(0.82 0.13 92);
+  --accent-foreground: oklch(0.28 0.04 100);
 
-  /* dark elements */
-  --dark: oklch(0.22 0.01 270);
-  --dark-foreground: oklch(0.98 0 0);
+  /* dark elements — deep green-tinted */
+  --dark: oklch(0.26 0.03 150);
+  --dark-foreground: oklch(0.98 0.01 130);
 }
 
 * {

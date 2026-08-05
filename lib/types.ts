@@ -24,6 +24,25 @@ export interface CompanyInput {
   additionalInfo: string
   /** Extra business links: socials, decks, docs, press — one per line or comma-separated. */
   links: string
+
+  /* ---- Исключения / стоп-факторы ---- */
+  /** Отрасли, которые исключаем из выборки. */
+  excludeIndustries: string
+  /** Регионы / рынки, которые не берём. */
+  excludeRegions: string
+  /** Размеры компаний, которые не подходят. */
+  excludeSizes: string
+  /** Стоп-факторы: если встречается — лид сразу отбраковывается. */
+  stopFactors: string
+
+  /* ---- Приоритизация ---- */
+  /** Обязательные сигналы для высокого приоритета. */
+  mustHaveSignals: string
+  /** Критерии, повышающие приоритет лида. */
+  priorityCriteria: string
+  /** Минимальный порог приоритета (например «≥3 подтверждённых сигнала»). */
+  priorityThreshold: string
+
   /** Custom AI prompt / instructions that steer tone, language, focus and constraints. */
   guidance: string
   /** Response language. "Auto" lets the model match the input language. */
