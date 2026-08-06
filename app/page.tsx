@@ -13,14 +13,13 @@ export default async function HomePage() {
     <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto flex max-w-5xl flex-col px-4 sm:px-6">
-        <section className="flex flex-col items-center py-20 text-center sm:py-24">
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-primary">Lead Research Agent</p>
-          <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-tight text-balance sm:text-5xl">
-            Разбор лида, который менеджер <span className="text-primary">реально возьмёт в работу</span>.
-          </h1>
+        <section className="flex flex-col items-start py-20 text-left sm:py-24">
+          <p className="font-mono text-2xl font-medium uppercase tracking-[0.22em] text-primary sm:text-4xl">
+            Lead Search Agent
+          </p>
           <Link
             href="/analysis/new"
-            className="mt-10 inline-flex items-center gap-2.5 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 sm:text-lg"
+            className="mt-12 inline-flex items-center gap-2.5 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 sm:text-lg"
           >
             Создать анализ
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
