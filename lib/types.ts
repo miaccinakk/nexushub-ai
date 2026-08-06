@@ -74,6 +74,18 @@ export type AnalysisSectionKey = (typeof ANALYSIS_SECTIONS)[number]["key"]
 
 export type AnalysisResult = Record<AnalysisSectionKey, string>
 
+/** A completed analysis persisted to data/analyses.json. */
+export interface SavedAnalysis {
+  id: string
+  createdAt: string
+  name: string
+  website: string
+  industry: string
+  targetMarket: string
+  input: CompanyInput
+  result: AnalysisResult
+}
+
 export const CONTENT_TYPES = [
   { key: "linkedin", task: "LinkedIn Post", label: "LinkedIn Post" },
   { key: "email", task: "Email Outreach", label: "Email Outreach" },
