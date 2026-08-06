@@ -15,7 +15,7 @@ const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
   ideas: Lightbulb,
 }
 
-export function ContentGenerator({ input }: { input: CompanyInput }) {
+export function ContentGenerator({ input, modelId }: { input: CompanyInput; modelId?: string }) {
   const [activeKey, setActiveKey] = useState<ContentTypeKey | null>(null)
   const [loadingKey, setLoadingKey] = useState<ContentTypeKey | null>(null)
   const [outputs, setOutputs] = useState<Partial<Record<ContentTypeKey, string>>>({})
@@ -30,7 +30,7 @@ export function ContentGenerator({ input }: { input: CompanyInput }) {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "content", task, input, instructions }),
+        body: JSON.stringify({ kind: "content", task, input, instructions, modelId }),
       })
       if (!res.ok) throw new Error("Request failed")
       const data = (await res.json()) as { text: string }

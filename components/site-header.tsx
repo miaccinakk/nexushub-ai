@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { LogoutButton } from "./logout-button"
 
 export function SiteHeader() {
   return (
@@ -20,6 +21,7 @@ export function SiteHeader() {
           >
             Создать анализ
           </Link>
+          <LogoutButton />
         </nav>
       </div>
     </header>

@@ -4,9 +4,11 @@ import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Globe, MapPin, Building2, Check } from "lucide-react"
 import { ANALYSIS_SECTIONS, type AnalysisResult, type CompanyInput } from "@/lib/types"
+import { DEFAULT_MODEL_ID } from "@/lib/models"
 import { CompanyForm } from "./company-form"
 import { AnalysisResults } from "./analysis-results"
 import { ContentGenerator } from "./content-generator"
+import { ModelSelector } from "./model-selector"
 
 const EMPTY_INPUT: CompanyInput = {
   name: "",
@@ -35,6 +37,7 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
   const [hasRun, setHasRun] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [modelId, setModelId] = useState(DEFAULT_MODEL_ID)
 
   async function runAnalysis() {
     setLoading(true)
@@ -49,7 +52,7 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
           const res = await fetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ kind: "section", task: section.task, input }),
+            body: JSON.stringify({ kind: "section", task: section.task, input, modelId }),
           })
           if (!res.ok) throw new Error("Request failed")
           const data = (await res.json()) as { text: string }
@@ -120,6 +123,8 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
         </div>
       </div>
 
+      <ModelSelector value={modelId} onChange={setModelId} />
+
       <CompanyForm input={input} onChange={setInput} onSubmit={runAnalysis} loading={loading} />
 
       {error ? <p className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">{error}</p> : null}
@@ -139,7 +144,9 @@ export function AnalysisWorkspace({ initialInput }: { initialInput?: CompanyInpu
         </section>
       ) : null}
 
-      {hasRun && !loading && Object.keys(result).length > 0 ? <ContentGenerator input={input} /> : null}
+      {hasRun && !loading && Object.keys(result).length > 0 ? (
+        <ContentGenerator input={input} modelId={modelId} />
+      ) : null}
     </div>
   )
 }

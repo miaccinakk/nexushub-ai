@@ -10,6 +10,7 @@ export async function POST(request: Request) {
       task: string
       input: CompanyInput
       instructions?: string
+      modelId?: string
     }
 
     if (!body?.task || !body?.input) {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
         ? buildContentPrompt(body.input, body.task, body.instructions)
         : buildSectionPrompt(body.input, body.task)
 
-    const text = await generateAIResponse(prompt)
+    const text = await generateAIResponse(prompt, body.modelId)
     return NextResponse.json({ text })
   } catch (error) {
     console.error("[v0] /api/generate error:", error)
