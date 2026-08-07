@@ -29,6 +29,7 @@ import { DEFAULT_MODEL_ID } from "@/lib/models"
 import { inputClass } from "./field-cell"
 import { FormattedText } from "./formatted-text"
 import { CopyButton } from "./copy-button"
+import { ModelSelector } from "./model-selector"
 
 const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
   linkedin: Linkedin,
@@ -59,7 +60,7 @@ export function EmailCreator({
   const [instructions, setInstructions] = useState("")
   const [language, setLanguage] = useState<string>("Auto")
   const [guidance, setGuidance] = useState("")
-  const [modelId] = useState(DEFAULT_MODEL_ID)
+  const [modelId, setModelId] = useState(DEFAULT_MODEL_ID)
   const [output, setOutput] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -197,6 +198,8 @@ export function EmailCreator({
           </select>
         </div>
       </section>
+
+      <ModelSelector value={modelId} onChange={setModelId} />
 
       {/* Format picker */}
       <section className="flex flex-col gap-2">
