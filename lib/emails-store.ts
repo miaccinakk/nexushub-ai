@@ -16,6 +16,12 @@ export async function readEmails(): Promise<Email[]> {
   }
 }
 
+/** Find a single email by id. */
+export async function getEmail(id: string): Promise<Email | null> {
+  const emails = await readEmails()
+  return emails.find((e) => e.id === id) ?? null
+}
+
 /** All emails that belong to a given lead. */
 export async function emailsByLead(leadId: string): Promise<Email[]> {
   const emails = await readEmails()
