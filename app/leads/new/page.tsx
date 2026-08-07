@@ -1,6 +1,6 @@
 import { SiteHeader } from "@/components/site-header"
 import { PageHeader } from "@/components/page-header"
-import { NewLeadForm } from "@/components/new-lead-form"
+import { LeadForm } from "@/components/lead-form"
 
 export default function NewLeadPage() {
   return (
@@ -13,7 +13,7 @@ export default function NewLeadPage() {
           backHref="/leads"
           backLabel="К лидам"
         />
-        <NewLeadForm />
+        <LeadForm />
       </main>
     </div>
   )

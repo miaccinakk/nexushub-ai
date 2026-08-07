@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, UserPlus } from "lucide-react"
+import { Loader2, UserPlus, Save } from "lucide-react"
 import { EMPTY_LEAD_INPUT, type LeadInput } from "@/lib/types"
 import { FieldCell } from "./field-cell"
 
@@ -51,9 +51,17 @@ const FIELDS: FieldDef[] = [
   },
 ]
 
-export function NewLeadForm() {
+interface LeadFormProps {
+  /** When provided, the form edits this lead via PUT instead of creating a new one. */
+  leadId?: string
+  /** Initial field values (defaults to an empty lead). */
+  initial?: LeadInput
+}
+
+export function LeadForm({ leadId, initial }: LeadFormProps) {
   const router = useRouter()
-  const [input, setInput] = useState<LeadInput>(EMPTY_LEAD_INPUT)
+  const isEdit = Boolean(leadId)
+  const [input, setInput] = useState<LeadInput>(initial ?? EMPTY_LEAD_INPUT)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,8 +75,8 @@ export function NewLeadForm() {
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch("/api/leads", {
-        method: "POST",
+      const res = await fetch(isEdit ? `/api/leads/${leadId}` : "/api/leads", {
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input }),
       })
@@ -77,7 +85,11 @@ export function NewLeadForm() {
       router.push(`/leads/${data.lead.id}`)
       router.refresh()
     } catch {
-      setError("Не удалось сохранить лид. Попробуй ещё раз.")
+      setError(
+        isEdit
+          ? "Не удалось сохранить изменения. Попробуй ещё раз."
+          : "Не удалось сохранить лид. Попробуй ещё раз.",
+      )
       setSaving(false)
     }
   }
@@ -111,6 +123,11 @@ export function NewLeadForm() {
           <>
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Сохраняю…
+          </>
+        ) : isEdit ? (
+          <>
+            <Save className="h-4 w-4" aria-hidden="true" />
+            Сохранить изменения
           </>
         ) : (
           <>
