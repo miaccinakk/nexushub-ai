@@ -29,3 +29,17 @@ export async function saveLead(lead: Lead): Promise<Lead> {
   await fs.writeFile(FILE_PATH, JSON.stringify(next, null, 2) + "\n", "utf-8")
   return lead
 }
+
+/** Update an existing lead in place. Returns the updated record, or null if not found. */
+export async function updateLead(
+  id: string,
+  patch: Partial<Omit<Lead, "id" | "createdAt">>,
+): Promise<Lead | null> {
+  const existing = await readLeads()
+  const index = existing.findIndex((l) => l.id === id)
+  if (index === -1) return null
+  const updated: Lead = { ...existing[index], ...patch }
+  existing[index] = updated
+  await fs.writeFile(FILE_PATH, JSON.stringify(existing, null, 2) + "\n", "utf-8")
+  return updated
+}

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { LineChart, Mail, Globe, Building2, MapPin, Clock, ArrowUpRight, Plus } from "lucide-react"
+import { LineChart, Mail, Globe, Building2, MapPin, Clock, ArrowUpRight, Plus, Pencil } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { PageHeader } from "@/components/page-header"
 import { getLead } from "@/lib/leads-store"
@@ -34,6 +34,13 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           backLabel="К лидам"
           action={
             <>
+              <Link
+                href={`/leads/${lead.id}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+              >
+                <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                Редактировать
+              </Link>
               <Link
                 href={`/analyses/new?leadId=${lead.id}`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
