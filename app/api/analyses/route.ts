@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { readAnalyses, saveAnalysis } from "@/lib/analyses-store"
-import type { AnalysisResult, CompanyInput, SavedAnalysis } from "@/lib/types"
+import { getLead } from "@/lib/leads-store"
+import { EMPTY_ANALYSIS_CONFIG, type Analysis, type AnalysisConfig, type AnalysisResult } from "@/lib/types"
 
 export async function GET() {
   const analyses = await readAnalyses()
@@ -10,22 +11,26 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
-      input: CompanyInput
+      leadId: string
+      config: AnalysisConfig
       result: AnalysisResult
     }
 
-    if (!body?.input || !body?.result) {
-      return NextResponse.json({ error: "Missing input or result." }, { status: 400 })
+    if (!body?.leadId || !body?.result) {
+      return NextResponse.json({ error: "Missing leadId or result." }, { status: 400 })
     }
 
-    const analysis: SavedAnalysis = {
+    const lead = await getLead(body.leadId)
+    if (!lead) {
+      return NextResponse.json({ error: "Lead not found." }, { status: 404 })
+    }
+
+    const analysis: Analysis = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      leadId: lead.id,
       createdAt: new Date().toISOString(),
-      name: body.input.name?.trim() || "Без названия",
-      website: body.input.website?.trim() || "",
-      industry: body.input.industry?.trim() || "",
-      targetMarket: body.input.targetMarket?.trim() || "",
-      input: body.input,
+      leadName: lead.name,
+      config: { ...EMPTY_ANALYSIS_CONFIG, ...body.config },
       result: body.result,
     }
 

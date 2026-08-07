@@ -1,19 +1,101 @@
 export type AnalysisStatus = "Analyzed" | "In Progress" | "Not Started"
 
-export interface Company {
+/* =============================================================================
+ *  ENTITY MODEL — three separate levels, linked by leadId
+ *  1) Lead     — the prospect / company card (who we're reaching out to)
+ *  2) Analysis — a GTM breakdown built on top of a Lead
+ *  3) Email    — outreach content built on a Lead (optionally on an Analysis)
+ * ========================================================================== */
+
+/** Level 1 — the core lead entity persisted to data/leads.json. */
+export interface Lead {
   id: string
+  createdAt: string
   name: string
   website: string
   industry: string
-  country: string
   targetMarket: string
-  description: string
   productDescription: string
   businessGoals: string
   additionalInfo: string
-  status: AnalysisStatus
+  /** Extra business links: socials, decks, docs, press — one per line. */
+  links: string
 }
 
+/** Fields a user fills when creating a Lead (everything except server-managed ids). */
+export type LeadInput = Omit<Lead, "id" | "createdAt">
+
+export const EMPTY_LEAD_INPUT: LeadInput = {
+  name: "",
+  website: "",
+  industry: "",
+  targetMarket: "",
+  productDescription: "",
+  businessGoals: "",
+  additionalInfo: "",
+  links: "",
+}
+
+/** Config that steers an analysis run: exclusions + prioritization + AI steering. */
+export interface AnalysisConfig {
+  /* Exclusions / stop-factors */
+  excludeIndustries: string
+  excludeRegions: string
+  excludeSizes: string
+  stopFactors: string
+  /* Prioritization */
+  mustHaveSignals: string
+  priorityCriteria: string
+  priorityThreshold: string
+  /* AI steering */
+  guidance: string
+  language: string
+}
+
+export const EMPTY_ANALYSIS_CONFIG: AnalysisConfig = {
+  excludeIndustries: "",
+  excludeRegions: "",
+  excludeSizes: "",
+  stopFactors: "",
+  mustHaveSignals: "",
+  priorityCriteria: "",
+  priorityThreshold: "",
+  guidance: "",
+  language: "Auto",
+}
+
+/** Level 2 — a completed analysis persisted to data/analyses.json. */
+export interface Analysis {
+  id: string
+  leadId: string
+  createdAt: string
+  /** Snapshot of the lead name for list rendering without a join. */
+  leadName: string
+  config: AnalysisConfig
+  result: AnalysisResult
+}
+
+/** Level 3 — a generated outreach asset persisted to data/emails.json. */
+export interface Email {
+  id: string
+  leadId: string
+  /** Optional — the analysis this email was built on. */
+  analysisId?: string
+  createdAt: string
+  leadName: string
+  contentType: ContentTypeKey
+  /** Human-facing label of the content type (snapshot). */
+  contentLabel: string
+  instructions: string
+  language: string
+  guidance: string
+  text: string
+}
+
+/**
+ * The flat shape passed to the prompt builders and /api/generate.
+ * It is assembled from a Lead (+ optional AnalysisConfig) — see buildPromptInput.
+ */
 export interface CompanyInput {
   name: string
   website: string
@@ -22,31 +104,42 @@ export interface CompanyInput {
   productDescription: string
   businessGoals: string
   additionalInfo: string
-  /** Extra business links: socials, decks, docs, press — one per line or comma-separated. */
   links: string
 
-  /* ---- Исключения / стоп-факторы ---- */
-  /** Отрасли, которые исключаем из выборки. */
   excludeIndustries: string
-  /** Регионы / рынки, которые не берём. */
   excludeRegions: string
-  /** Размеры компаний, которые не подходят. */
   excludeSizes: string
-  /** Стоп-факторы: если встречается — лид сразу отбраковывается. */
   stopFactors: string
 
-  /* ---- Приоритизация ---- */
-  /** Обязательные сигналы для высокого приоритета. */
   mustHaveSignals: string
-  /** Критерии, повышающие приоритет лида. */
   priorityCriteria: string
-  /** Минимальный порог приоритета (например «≥3 подтверждённых сигнала»). */
   priorityThreshold: string
 
-  /** Custom AI prompt / instructions that steer tone, language, focus and constraints. */
   guidance: string
-  /** Response language. "Auto" lets the model match the input language. */
   language: string
+}
+
+/** Merge a Lead and an (optional) AnalysisConfig into a flat prompt input. */
+export function buildPromptInput(lead: LeadInput, config?: Partial<AnalysisConfig>): CompanyInput {
+  return {
+    name: lead.name,
+    website: lead.website,
+    industry: lead.industry,
+    targetMarket: lead.targetMarket,
+    productDescription: lead.productDescription,
+    businessGoals: lead.businessGoals,
+    additionalInfo: lead.additionalInfo,
+    links: lead.links,
+    excludeIndustries: config?.excludeIndustries ?? "",
+    excludeRegions: config?.excludeRegions ?? "",
+    excludeSizes: config?.excludeSizes ?? "",
+    stopFactors: config?.stopFactors ?? "",
+    mustHaveSignals: config?.mustHaveSignals ?? "",
+    priorityCriteria: config?.priorityCriteria ?? "",
+    priorityThreshold: config?.priorityThreshold ?? "",
+    guidance: config?.guidance ?? "",
+    language: config?.language ?? "Auto",
+  }
 }
 
 export const LANGUAGES = [
@@ -74,18 +167,6 @@ export type AnalysisSectionKey = (typeof ANALYSIS_SECTIONS)[number]["key"]
 
 export type AnalysisResult = Record<AnalysisSectionKey, string>
 
-/** A completed analysis persisted to data/analyses.json. */
-export interface SavedAnalysis {
-  id: string
-  createdAt: string
-  name: string
-  website: string
-  industry: string
-  targetMarket: string
-  input: CompanyInput
-  result: AnalysisResult
-}
-
 export const CONTENT_TYPES = [
   { key: "linkedin", task: "LinkedIn Post", label: "LinkedIn Post" },
   { key: "email", task: "Email Outreach", label: "Email Outreach" },
@@ -96,3 +177,6 @@ export const CONTENT_TYPES = [
 ] as const
 
 export type ContentTypeKey = (typeof CONTENT_TYPES)[number]["key"]
+
+/** Entity kinds used by the dashboard filter. */
+export type EntityType = "lead" | "analysis" | "email"
