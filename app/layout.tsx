@@ -19,9 +19,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: "Nexus · Lead Research",
+  title: "Nexus Opener",
   description:
-    "Разбор лида по одной компании: сигналы с источниками, приоритет со стоп-факторами и готовый текст под этап и канал.",
+    "Nexus Opener — рабочее пространство для аутрича: лиды, их анализ и генерация писем на основе лида и анализа.",
 }
 
 export default function RootLayout({
