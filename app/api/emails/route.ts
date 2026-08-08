@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { readEmails, saveEmail } from "@/lib/emails-store"
-import { getLead } from "@/lib/leads-store"
+import { getCompany } from "@/lib/companies-store"
+import { getPerson } from "@/lib/people-store"
 import { CONTENT_TYPES, type ContentTypeKey, type Email } from "@/lib/types"
 
 export async function GET() {
@@ -11,7 +12,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
-      leadId: string
+      companyId: string
+      personId?: string
       analysisId?: string
       contentType: ContentTypeKey
       instructions?: string
@@ -20,23 +22,27 @@ export async function POST(request: Request) {
       text: string
     }
 
-    if (!body?.leadId || !body?.text || !body?.contentType) {
-      return NextResponse.json({ error: "Missing leadId, contentType or text." }, { status: 400 })
+    if (!body?.companyId || !body?.text || !body?.contentType) {
+      return NextResponse.json({ error: "Missing companyId, contentType or text." }, { status: 400 })
     }
 
-    const lead = await getLead(body.leadId)
-    if (!lead) {
-      return NextResponse.json({ error: "Lead not found." }, { status: 404 })
+    const company = await getCompany(body.companyId)
+    if (!company) {
+      return NextResponse.json({ error: "Company not found." }, { status: 404 })
     }
+
+    const person = body.personId ? await getPerson(body.personId) : null
 
     const contentLabel = CONTENT_TYPES.find((t) => t.key === body.contentType)?.label ?? body.contentType
 
     const email: Email = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      leadId: lead.id,
-      analysisId: body.analysisId || undefined,
       createdAt: new Date().toISOString(),
-      leadName: lead.name,
+      companyId: company.id,
+      companyName: company.name,
+      personId: person?.id,
+      personName: person?.name,
+      analysisId: body.analysisId || undefined,
       contentType: body.contentType,
       contentLabel,
       instructions: body.instructions || "",

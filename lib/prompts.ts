@@ -1,11 +1,11 @@
-import type { CompanyInput } from "./types"
+import type { PromptInput } from "./types"
 
 /**
  * Builds a compact, structured context block shared by every prompt.
  * The [TASK: ...] marker lets the mock model route responses; a real model
  * simply reads it as plain instruction text.
  */
-function companyContext(input: CompanyInput): string {
+function companyContext(input: PromptInput): string {
   return [
     `Company: ${input.name || "N/A"}`,
     `Website: ${input.website || "N/A"}`,
@@ -15,6 +15,9 @@ function companyContext(input: CompanyInput): string {
     `Business goals: ${input.businessGoals || "N/A"}`,
     `Additional information: ${input.additionalInfo || "N/A"}`,
     `Business links: ${input.links?.trim() ? input.links.replace(/\s*\n\s*/g, ", ") : "N/A"}`,
+    ``,
+    `[PEOPLE — contacts attached to this lead]`,
+    input.people?.trim() ? input.people.trim() : "N/A",
     ``,
     `[EXCLUSIONS — hard filters, disqualify before scoring]`,
     `Exclude industries: ${input.excludeIndustries || "N/A"}`,
@@ -33,7 +36,7 @@ function companyContext(input: CompanyInput): string {
  * Forces the response language when the user picked a specific one.
  * "Auto" (or empty) lets the model match the input language.
  */
-function languageBlock(input: CompanyInput): string {
+function languageBlock(input: PromptInput): string {
   const lang = input.language?.trim()
   if (!lang || lang === "Auto") return ""
   return ["", `[LANGUAGE] Write the entire response in ${lang}, including headings and labels.`].join("\n")
@@ -43,7 +46,7 @@ function languageBlock(input: CompanyInput): string {
  * Appends the user's custom AI instructions (if any) as a high-priority
  * directive. `extra` carries per-generation instructions for a single asset.
  */
-function guidanceBlock(input: CompanyInput, extra?: string): string {
+function guidanceBlock(input: PromptInput, extra?: string): string {
   const parts: string[] = []
   if (input.guidance?.trim()) parts.push(input.guidance.trim())
   if (extra?.trim()) parts.push(extra.trim())
@@ -51,7 +54,7 @@ function guidanceBlock(input: CompanyInput, extra?: string): string {
   return ["", `[CUSTOM INSTRUCTIONS — follow these closely]`, ...parts].join("\n")
 }
 
-export function buildSectionPrompt(input: CompanyInput, task: string): string {
+export function buildSectionPrompt(input: PromptInput, task: string): string {
   return [
     `[TASK: ${task}]`,
     `You are a senior B2B go-to-market strategist.`,
@@ -65,7 +68,7 @@ export function buildSectionPrompt(input: CompanyInput, task: string): string {
     .join("\n")
 }
 
-export function buildContentPrompt(input: CompanyInput, task: string, instructions?: string): string {
+export function buildContentPrompt(input: PromptInput, task: string, instructions?: string): string {
   return [
     `[TASK: ${task}]`,
     `You are an expert B2B copywriter.`,

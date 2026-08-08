@@ -3,7 +3,21 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Loader2, Wand2, Ban, ListFilter, Languages, Sparkles, Globe, Building2, MapPin, Users } from "lucide-react"
+import {
+  Loader2,
+  Wand2,
+  Ban,
+  ListFilter,
+  Languages,
+  Sparkles,
+  Globe,
+  Layers,
+  MapPin,
+  Building2,
+  User,
+  Briefcase,
+  Check,
+} from "lucide-react"
 import {
   ANALYSIS_SECTIONS,
   EMPTY_ANALYSIS_CONFIG,
@@ -11,7 +25,8 @@ import {
   buildPromptInput,
   type AnalysisConfig,
   type AnalysisResult,
-  type Lead,
+  type Company,
+  type Person,
 } from "@/lib/types"
 import { DEFAULT_MODEL_ID } from "@/lib/models"
 import { FieldCell, inputClass } from "./field-cell"
@@ -64,10 +79,25 @@ const PRIORITY_FIELDS: ConfigField[] = [
   },
 ]
 
-export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; preselectedLeadId?: string }) {
+export function AnalysisCreator({
+  companies,
+  people,
+  preselectedCompanyId,
+  preselectedPersonId,
+}: {
+  companies: Company[]
+  people: Person[]
+  preselectedCompanyId?: string
+  preselectedPersonId?: string
+}) {
   const router = useRouter()
-  const [leadId, setLeadId] = useState<string>(
-    preselectedLeadId && leads.some((l) => l.id === preselectedLeadId) ? preselectedLeadId : leads[0]?.id ?? "",
+  const [companyId, setCompanyId] = useState<string>(
+    preselectedCompanyId && companies.some((c) => c.id === preselectedCompanyId)
+      ? preselectedCompanyId
+      : companies[0]?.id ?? "",
+  )
+  const [personIds, setPersonIds] = useState<string[]>(
+    preselectedPersonId && people.some((p) => p.id === preselectedPersonId) ? [preselectedPersonId] : [],
   )
   const [config, setConfig] = useState<AnalysisConfig>(EMPTY_ANALYSIS_CONFIG)
   const [modelId, setModelId] = useState(DEFAULT_MODEL_ID)
@@ -75,19 +105,27 @@ export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; p
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const lead = useMemo(() => leads.find((l) => l.id === leadId), [leads, leadId])
+  const company = useMemo(() => companies.find((c) => c.id === companyId), [companies, companyId])
+  const selectedPeople = useMemo(
+    () => people.filter((p) => personIds.includes(p.id)),
+    [people, personIds],
+  )
 
   function update(key: keyof AnalysisConfig, value: string) {
     setConfig((prev) => ({ ...prev, [key]: value }))
   }
 
+  function togglePerson(id: string) {
+    setPersonIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
+  }
+
   async function runAnalysis() {
-    if (!lead) return
+    if (!company) return
     setLoading(true)
     setError(null)
     setResult({})
 
-    const input = buildPromptInput(lead, config)
+    const input = buildPromptInput(company, selectedPeople, config)
 
     try {
       const responses = await Promise.all(
@@ -108,7 +146,7 @@ export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; p
       const saveRes = await fetch("/api/analyses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId: lead.id, config, result: fullResult }),
+        body: JSON.stringify({ companyId: company.id, personIds, config, result: fullResult }),
       })
       if (!saveRes.ok) throw new Error("Save failed")
       const saved = (await saveRes.json()) as { analysis: { id: string } }
@@ -120,19 +158,19 @@ export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; p
     }
   }
 
-  if (leads.length === 0) {
+  if (companies.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-12 text-center">
-        <p className="text-sm font-medium text-foreground">Сначала создай лид</p>
+        <p className="text-sm font-medium text-foreground">Сначала создай компанию</p>
         <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
-          Анализ строится на данных лида — без него не с чем работать.
+          Анализ строится на компании — без неё не с чем работать.
         </p>
         <Link
-          href="/leads/new"
+          href="/companies/new"
           className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
         >
-          <Users className="h-4 w-4" aria-hidden="true" />
-          Создать лид
+          <Building2 className="h-4 w-4" aria-hidden="true" />
+          Создать компанию
         </Link>
       </div>
     )
@@ -140,46 +178,113 @@ export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; p
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Lead selector */}
+      {/* Company selector */}
       <section className="flex flex-col gap-2">
-        <label htmlFor="analysis-lead" className="text-sm font-semibold tracking-tight">
-          Лид для анализа
+        <label htmlFor="analysis-company" className="flex items-center gap-1.5 text-sm font-semibold tracking-tight">
+          <Building2 className="h-4 w-4 text-primary" aria-hidden="true" />
+          Компания
         </label>
         <select
-          id="analysis-lead"
-          value={leadId}
-          onChange={(e) => setLeadId(e.target.value)}
+          id="analysis-company"
+          value={companyId}
+          onChange={(e) => setCompanyId(e.target.value)}
           className={inputClass}
         >
-          {leads.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-              {l.industry ? ` — ${l.industry}` : ""}
+          {companies.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.industry ? ` — ${c.industry}` : ""}
             </option>
           ))}
         </select>
-        {lead ? (
+        {company ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-border bg-muted/40 px-3.5 py-2.5 text-xs text-muted-foreground">
-            {lead.website ? (
+            {company.website ? (
               <span className="flex items-center gap-1">
                 <Globe className="h-3 w-3" aria-hidden="true" />
-                {lead.website}
+                {company.website}
               </span>
             ) : null}
-            {lead.industry ? (
+            {company.industry ? (
               <span className="flex items-center gap-1">
-                <Building2 className="h-3 w-3" aria-hidden="true" />
-                {lead.industry}
+                <Layers className="h-3 w-3" aria-hidden="true" />
+                {company.industry}
               </span>
             ) : null}
-            {lead.targetMarket ? (
+            {company.targetMarket ? (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3 text-accent" aria-hidden="true" />
-                {lead.targetMarket}
+                {company.targetMarket}
               </span>
             ) : null}
           </div>
         ) : null}
+      </section>
+
+      {/* People multi-select */}
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-sm font-semibold tracking-tight">
+            <User className="h-4 w-4 text-primary" aria-hidden="true" />
+            Люди
+            <span className="rounded-full bg-border/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              {personIds.length}
+            </span>
+          </span>
+          <Link
+            href="/people/new"
+            className="text-xs font-medium text-primary transition-colors hover:opacity-80"
+          >
+            + Новый человек
+          </Link>
+        </div>
+
+        {people.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border bg-card/50 px-3.5 py-4 text-center text-sm text-muted-foreground">
+            Людей пока нет. Можно собрать анализ и без них, но лучше{" "}
+            <Link href="/people/new" className="text-primary hover:opacity-80">
+              добавить человека
+            </Link>
+            .
+          </p>
+        ) : (
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {people.map((p) => {
+              const active = personIds.includes(p.id)
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => togglePerson(p.id)}
+                    aria-pressed={active}
+                    className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                      active
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:border-primary/40 hover:bg-muted/40"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                        active ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background"
+                      }`}
+                    >
+                      {active ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                    </span>
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-medium text-card-foreground">{p.name}</span>
+                      {p.role ? (
+                        <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                          <Briefcase className="h-3 w-3" aria-hidden="true" />
+                          {p.role}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </section>
 
       <ModelSelector value={modelId} onChange={setModelId} />
@@ -270,7 +375,7 @@ export function AnalysisCreator({ leads, preselectedLeadId }: { leads: Lead[]; p
         <button
           type="button"
           onClick={runAnalysis}
-          disabled={loading || !lead}
+          disabled={loading || !company}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {loading ? (

@@ -8,7 +8,7 @@ import {
   Save,
   Sparkles,
   Languages,
-  Users,
+  Building2,
   Linkedin,
   Mail,
   CalendarDays,
@@ -22,8 +22,9 @@ import {
   LANGUAGES,
   buildPromptInput,
   type Analysis,
+  type Company,
   type ContentTypeKey,
-  type Lead,
+  type Person,
 } from "@/lib/types"
 import { DEFAULT_MODEL_ID } from "@/lib/models"
 import { inputClass } from "./field-cell"
@@ -41,21 +42,26 @@ const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
 }
 
 export function EmailCreator({
-  leads,
+  companies,
+  people,
   analyses,
-  preselectedLeadId,
+  preselectedCompanyId,
   preselectedAnalysisId,
 }: {
-  leads: Lead[]
+  companies: Company[]
+  people: Person[]
   analyses: Analysis[]
-  preselectedLeadId?: string
+  preselectedCompanyId?: string
   preselectedAnalysisId?: string
 }) {
   const router = useRouter()
-  const [leadId, setLeadId] = useState<string>(
-    preselectedLeadId && leads.some((l) => l.id === preselectedLeadId) ? preselectedLeadId : leads[0]?.id ?? "",
+  const [companyId, setCompanyId] = useState<string>(
+    preselectedCompanyId && companies.some((c) => c.id === preselectedCompanyId)
+      ? preselectedCompanyId
+      : companies[0]?.id ?? "",
   )
   const [analysisId, setAnalysisId] = useState<string>(preselectedAnalysisId ?? "")
+  const [personId, setPersonId] = useState<string>("")
   const [contentType, setContentType] = useState<ContentTypeKey>("email")
   const [instructions, setInstructions] = useState("")
   const [language, setLanguage] = useState<string>("Auto")
@@ -66,25 +72,52 @@ export function EmailCreator({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const lead = useMemo(() => leads.find((l) => l.id === leadId), [leads, leadId])
-  const leadAnalyses = useMemo(() => analyses.filter((a) => a.leadId === leadId), [analyses, leadId])
+  const company = useMemo(() => companies.find((c) => c.id === companyId), [companies, companyId])
+  const companyAnalyses = useMemo(
+    () => analyses.filter((a) => a.companyId === companyId),
+    [analyses, companyId],
+  )
   const selectedAnalysis = useMemo(
-    () => leadAnalyses.find((a) => a.id === analysisId),
-    [leadAnalyses, analysisId],
+    () => companyAnalyses.find((a) => a.id === analysisId),
+    [companyAnalyses, analysisId],
   )
 
-  function onLeadChange(nextId: string) {
-    setLeadId(nextId)
-    setAnalysisId("") // reset analysis — it belongs to the previous lead
+  /* People available to target: if an analysis is selected, scope to its people;
+     otherwise offer every person in the workspace. */
+  const availablePeople = useMemo(() => {
+    if (selectedAnalysis) return people.filter((p) => selectedAnalysis.personIds.includes(p.id))
+    return people
+  }, [people, selectedAnalysis])
+
+  const selectedPerson = useMemo(
+    () => availablePeople.find((p) => p.id === personId),
+    [availablePeople, personId],
+  )
+
+  function onCompanyChange(nextId: string) {
+    setCompanyId(nextId)
+    setAnalysisId("") // analysis belongs to the previous company
+    setPersonId("")
+    setOutput(null)
+  }
+
+  function onAnalysisChange(nextId: string) {
+    setAnalysisId(nextId)
+    setPersonId("") // person selection may no longer be in scope
     setOutput(null)
   }
 
   async function generate() {
-    if (!lead) return
+    if (!company) return
     setGenerating(true)
     setError(null)
 
-    const input = buildPromptInput(lead, { ...(selectedAnalysis?.config ?? {}), language, guidance })
+    const promptPeople = selectedPerson ? [selectedPerson] : availablePeople
+    const input = buildPromptInput(company, promptPeople, {
+      ...(selectedAnalysis?.config ?? {}),
+      language,
+      guidance,
+    })
     const task = CONTENT_TYPES.find((t) => t.key === contentType)?.task ?? "Email Outreach"
 
     const analysisDigest = selectedAnalysis
@@ -114,7 +147,7 @@ export function EmailCreator({
   }
 
   async function save() {
-    if (!lead || !output) return
+    if (!company || !output) return
     setSaving(true)
     setError(null)
     try {
@@ -122,7 +155,8 @@ export function EmailCreator({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          leadId: lead.id,
+          companyId: company.id,
+          personId: personId || undefined,
           analysisId: analysisId || undefined,
           contentType,
           instructions,
@@ -141,19 +175,19 @@ export function EmailCreator({
     }
   }
 
-  if (leads.length === 0) {
+  if (companies.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-12 text-center">
-        <p className="text-sm font-medium text-foreground">Сначала создай лид</p>
+        <p className="text-sm font-medium text-foreground">Сначала создай компанию</p>
         <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
-          Письма пишутся на основе лида (и, по желанию, его анализа).
+          Письма пишутся на основе компании (и, по желанию, человека и анализа).
         </p>
         <Link
-          href="/leads/new"
+          href="/companies/new"
           className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
         >
-          <Users className="h-4 w-4" aria-hidden="true" />
-          Создать лид
+          <Building2 className="h-4 w-4" aria-hidden="true" />
+          Создать компанию
         </Link>
       </div>
     )
@@ -163,17 +197,22 @@ export function EmailCreator({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Source: lead + optional analysis */}
-      <section className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/40 p-4 sm:grid-cols-2 sm:p-5">
+      {/* Source: company + optional analysis + optional person */}
+      <section className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/40 p-4 sm:grid-cols-3 sm:p-5">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email-lead" className="text-xs font-semibold tracking-tight text-foreground">
-            Лид
+          <label htmlFor="email-company" className="text-xs font-semibold tracking-tight text-foreground">
+            Компания
           </label>
-          <select id="email-lead" value={leadId} onChange={(e) => onLeadChange(e.target.value)} className={inputClass}>
-            {leads.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-                {l.industry ? ` — ${l.industry}` : ""}
+          <select
+            id="email-company"
+            value={companyId}
+            onChange={(e) => onCompanyChange(e.target.value)}
+            className={inputClass}
+          >
+            {companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+                {c.industry ? ` — ${c.industry}` : ""}
               </option>
             ))}
           </select>
@@ -185,14 +224,36 @@ export function EmailCreator({
           <select
             id="email-analysis"
             value={analysisId}
-            onChange={(e) => setAnalysisId(e.target.value)}
+            onChange={(e) => onAnalysisChange(e.target.value)}
             className={inputClass}
-            disabled={leadAnalyses.length === 0}
+            disabled={companyAnalyses.length === 0}
           >
-            <option value="">{leadAnalyses.length === 0 ? "Нет анализов у лида" : "Без анализа"}</option>
-            {leadAnalyses.map((a) => (
+            <option value="">{companyAnalyses.length === 0 ? "Нет анализов" : "Без анализа"}</option>
+            {companyAnalyses.map((a) => (
               <option key={a.id} value={a.id}>
                 Анализ от {new Date(a.createdAt).toLocaleDateString("ru-RU")}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email-person" className="text-xs font-semibold tracking-tight text-foreground">
+            Кому <span className="font-normal text-muted-foreground">(по желанию)</span>
+          </label>
+          <select
+            id="email-person"
+            value={personId}
+            onChange={(e) => setPersonId(e.target.value)}
+            className={inputClass}
+            disabled={availablePeople.length === 0}
+          >
+            <option value="">
+              {availablePeople.length === 0 ? "Нет людей" : "Все люди лида"}
+            </option>
+            {availablePeople.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.role ? ` — ${p.role}` : ""}
               </option>
             ))}
           </select>
@@ -281,7 +342,7 @@ export function EmailCreator({
         <button
           type="button"
           onClick={generate}
-          disabled={generating || !lead}
+          disabled={generating || !company}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {generating ? (

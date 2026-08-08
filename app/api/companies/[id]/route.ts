@@ -1,25 +1,25 @@
 import { NextResponse } from "next/server"
-import { getLead, updateLead } from "@/lib/leads-store"
-import type { LeadInput } from "@/lib/types"
+import { getCompany, updateCompany } from "@/lib/companies-store"
+import type { CompanyInput } from "@/lib/types"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const lead = await getLead(id)
-  if (!lead) return NextResponse.json({ error: "Lead not found." }, { status: 404 })
-  return NextResponse.json({ lead })
+  const company = await getCompany(id)
+  if (!company) return NextResponse.json({ error: "Company not found." }, { status: 404 })
+  return NextResponse.json({ company })
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const body = (await request.json()) as { input: LeadInput }
+    const body = (await request.json()) as { input: CompanyInput }
 
     if (!body?.input?.name?.trim()) {
-      return NextResponse.json({ error: "Lead name is required." }, { status: 400 })
+      return NextResponse.json({ error: "Company name is required." }, { status: 400 })
     }
 
     const input = body.input
-    const lead = await updateLead(id, {
+    const company = await updateCompany(id, {
       name: input.name.trim(),
       website: input.website?.trim() || "",
       industry: input.industry?.trim() || "",
@@ -30,10 +30,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       links: input.links?.trim() || "",
     })
 
-    if (!lead) return NextResponse.json({ error: "Lead not found." }, { status: 404 })
-    return NextResponse.json({ lead })
+    if (!company) return NextResponse.json({ error: "Company not found." }, { status: 404 })
+    return NextResponse.json({ company })
   } catch (error) {
-    console.error("[v0] /api/leads/[id] PUT error:", error)
-    return NextResponse.json({ error: "Failed to update lead." }, { status: 500 })
+    console.error("[v0] /api/companies/[id] PUT error:", error)
+    return NextResponse.json({ error: "Failed to update company." }, { status: 500 })
   }
 }

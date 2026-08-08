@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server"
-import { readLeads, saveLead } from "@/lib/leads-store"
-import type { Lead, LeadInput } from "@/lib/types"
+import { readCompanies, saveCompany } from "@/lib/companies-store"
+import type { Company, CompanyInput } from "@/lib/types"
 
 export async function GET() {
-  const leads = await readLeads()
-  return NextResponse.json({ leads })
+  const companies = await readCompanies()
+  return NextResponse.json({ companies })
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { input: LeadInput }
+    const body = (await request.json()) as { input: CompanyInput }
 
     if (!body?.input?.name?.trim()) {
-      return NextResponse.json({ error: "Lead name is required." }, { status: 400 })
+      return NextResponse.json({ error: "Company name is required." }, { status: 400 })
     }
 
     const input = body.input
-    const lead: Lead = {
+    const company: Company = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdAt: new Date().toISOString(),
       name: input.name.trim(),
@@ -29,10 +29,10 @@ export async function POST(request: Request) {
       links: input.links?.trim() || "",
     }
 
-    await saveLead(lead)
-    return NextResponse.json({ lead })
+    await saveCompany(company)
+    return NextResponse.json({ company })
   } catch (error) {
-    console.error("[v0] /api/leads error:", error)
-    return NextResponse.json({ error: "Failed to save lead." }, { status: 500 })
+    console.error("[v0] /api/companies error:", error)
+    return NextResponse.json({ error: "Failed to save company." }, { status: 500 })
   }
 }

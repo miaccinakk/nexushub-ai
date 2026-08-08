@@ -22,10 +22,16 @@ export async function getEmail(id: string): Promise<Email | null> {
   return emails.find((e) => e.id === id) ?? null
 }
 
-/** All emails that belong to a given lead. */
-export async function emailsByLead(leadId: string): Promise<Email[]> {
+/** All emails that belong to a given company. */
+export async function emailsByCompany(companyId: string): Promise<Email[]> {
   const emails = await readEmails()
-  return emails.filter((e) => e.leadId === leadId)
+  return emails.filter((e) => e.companyId === companyId)
+}
+
+/** All emails that target a given person. */
+export async function emailsByPerson(personId: string): Promise<Email[]> {
+  const emails = await readEmails()
+  return emails.filter((e) => e.personId === personId)
 }
 
 /** Append a new email to the JSON file and return the persisted record. */

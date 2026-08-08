@@ -1,14 +1,19 @@
 export type AnalysisStatus = "Analyzed" | "In Progress" | "Not Started"
 
 /* =============================================================================
- *  ENTITY MODEL — three separate levels, linked by leadId
- *  1) Lead     — the prospect / company card (who we're reaching out to)
- *  2) Analysis — a GTM breakdown built on top of a Lead
- *  3) Email    — outreach content built on a Lead (optionally on an Analysis)
+ *  ENTITY MODEL — top-level entities + derived assets
+ *  1) Company  — a company card (site, industry, product, goals)
+ *  2) Person   — a human contact card (role, socials, site, bio) — независим
+ *  3) Analysis — a "lead" assembled from ONE company + SEVERAL people
+ *  4) Email    — outreach content built on a company (optionally person/analysis)
  * ========================================================================== */
 
-/** Level 1 — the core lead entity persisted to data/leads.json. */
-export interface Lead {
+/* -------------------------------------------------------------------------- */
+/*  Company                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/** A company card persisted to data/companies.json. */
+export interface Company {
   id: string
   createdAt: string
   name: string
@@ -18,14 +23,14 @@ export interface Lead {
   productDescription: string
   businessGoals: string
   additionalInfo: string
-  /** Extra business links: socials, decks, docs, press — one per line. */
+  /** Extra links: site, decks, docs, press — one per line. */
   links: string
 }
 
-/** Fields a user fills when creating a Lead (everything except server-managed ids). */
-export type LeadInput = Omit<Lead, "id" | "createdAt">
+/** Fields a user fills when creating a Company (everything except server ids). */
+export type CompanyInput = Omit<Company, "id" | "createdAt">
 
-export const EMPTY_LEAD_INPUT: LeadInput = {
+export const EMPTY_COMPANY_INPUT: CompanyInput = {
   name: "",
   website: "",
   industry: "",
@@ -35,6 +40,42 @@ export const EMPTY_LEAD_INPUT: LeadInput = {
   additionalInfo: "",
   links: "",
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Person                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/** A person card persisted to data/people.json. Independent of any company. */
+export interface Person {
+  id: string
+  createdAt: string
+  name: string
+  /** Role / title, e.g. "CEO", "Head of Growth". */
+  role: string
+  /** Personal website / portfolio. */
+  website: string
+  /** Social links — one per line (LinkedIn, X, Telegram, …). */
+  links: string
+  /** Who they are: background, characteristics, what matters to them. */
+  bio: string
+  additionalInfo: string
+}
+
+/** Fields a user fills when creating a Person. */
+export type PersonInput = Omit<Person, "id" | "createdAt">
+
+export const EMPTY_PERSON_INPUT: PersonInput = {
+  name: "",
+  role: "",
+  website: "",
+  links: "",
+  bio: "",
+  additionalInfo: "",
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Analysis                                                                   */
+/* -------------------------------------------------------------------------- */
 
 /** Config that steers an analysis run: exclusions + prioritization + AI steering. */
 export interface AnalysisConfig {
@@ -64,25 +105,36 @@ export const EMPTY_ANALYSIS_CONFIG: AnalysisConfig = {
   language: "Auto",
 }
 
-/** Level 2 — a completed analysis persisted to data/analyses.json. */
+/** A completed analysis persisted to data/analyses.json — one company + people. */
 export interface Analysis {
   id: string
-  leadId: string
   createdAt: string
-  /** Snapshot of the lead name for list rendering without a join. */
-  leadName: string
+  companyId: string
+  /** Snapshot of the company name for list rendering without a join. */
+  companyName: string
+  /** People included in this lead. */
+  personIds: string[]
+  /** Snapshot of the people names for list rendering without a join. */
+  personNames: string[]
   config: AnalysisConfig
   result: AnalysisResult
 }
 
-/** Level 3 — a generated outreach asset persisted to data/emails.json. */
+/* -------------------------------------------------------------------------- */
+/*  Email                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/** A generated outreach asset persisted to data/emails.json. */
 export interface Email {
   id: string
-  leadId: string
+  createdAt: string
+  companyId: string
+  companyName: string
+  /** Optional — the specific person this outreach targets. */
+  personId?: string
+  personName?: string
   /** Optional — the analysis this email was built on. */
   analysisId?: string
-  createdAt: string
-  leadName: string
   contentType: ContentTypeKey
   /** Human-facing label of the content type (snapshot). */
   contentLabel: string
@@ -92,11 +144,15 @@ export interface Email {
   text: string
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Prompt input                                                               */
+/* -------------------------------------------------------------------------- */
+
 /**
  * The flat shape passed to the prompt builders and /api/generate.
- * It is assembled from a Lead (+ optional AnalysisConfig) — see buildPromptInput.
+ * Assembled from a Company (+ people + optional AnalysisConfig).
  */
-export interface CompanyInput {
+export interface PromptInput {
   name: string
   website: string
   industry: string
@@ -105,6 +161,9 @@ export interface CompanyInput {
   businessGoals: string
   additionalInfo: string
   links: string
+
+  /** Formatted block describing the people attached to this lead. */
+  people: string
 
   excludeIndustries: string
   excludeRegions: string
@@ -119,17 +178,34 @@ export interface CompanyInput {
   language: string
 }
 
-/** Merge a Lead and an (optional) AnalysisConfig into a flat prompt input. */
-export function buildPromptInput(lead: LeadInput, config?: Partial<AnalysisConfig>): CompanyInput {
+/** Render one person into a compact, readable block for the prompt. */
+function personBlock(person: Pick<Person, "name" | "role" | "website" | "links" | "bio" | "additionalInfo">): string {
+  const parts = [
+    `- ${person.name || "N/A"}${person.role ? ` — ${person.role}` : ""}`,
+    person.website ? `  Сайт: ${person.website}` : "",
+    person.links?.trim() ? `  Соцсети: ${person.links.replace(/\s*\n\s*/g, ", ")}` : "",
+    person.bio?.trim() ? `  О человеке: ${person.bio.trim()}` : "",
+    person.additionalInfo?.trim() ? `  Доп.: ${person.additionalInfo.trim()}` : "",
+  ]
+  return parts.filter(Boolean).join("\n")
+}
+
+/** Merge a Company, its people and an (optional) AnalysisConfig into a flat prompt input. */
+export function buildPromptInput(
+  company: CompanyInput,
+  people: PersonInput[] = [],
+  config?: Partial<AnalysisConfig>,
+): PromptInput {
   return {
-    name: lead.name,
-    website: lead.website,
-    industry: lead.industry,
-    targetMarket: lead.targetMarket,
-    productDescription: lead.productDescription,
-    businessGoals: lead.businessGoals,
-    additionalInfo: lead.additionalInfo,
-    links: lead.links,
+    name: company.name,
+    website: company.website,
+    industry: company.industry,
+    targetMarket: company.targetMarket,
+    productDescription: company.productDescription,
+    businessGoals: company.businessGoals,
+    additionalInfo: company.additionalInfo,
+    links: company.links,
+    people: people.length > 0 ? people.map(personBlock).join("\n") : "",
     excludeIndustries: config?.excludeIndustries ?? "",
     excludeRegions: config?.excludeRegions ?? "",
     excludeSizes: config?.excludeSizes ?? "",
@@ -179,4 +255,4 @@ export const CONTENT_TYPES = [
 export type ContentTypeKey = (typeof CONTENT_TYPES)[number]["key"]
 
 /** Entity kinds used by the dashboard filter. */
-export type EntityType = "lead" | "analysis" | "email"
+export type EntityType = "company" | "person" | "analysis" | "email"
