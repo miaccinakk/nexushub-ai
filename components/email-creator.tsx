@@ -15,6 +15,7 @@ import {
   Twitter,
   Clapperboard,
   Lightbulb,
+  FileText,
 } from "lucide-react"
 import {
   ANALYSIS_SECTIONS,
@@ -25,6 +26,7 @@ import {
   type Company,
   type ContentTypeKey,
   type Person,
+  type Template,
 } from "@/lib/types"
 import { DEFAULT_MODEL_ID } from "@/lib/models"
 import { inputClass } from "./field-cell"
@@ -41,16 +43,21 @@ const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
   ideas: Lightbulb,
 }
 
+/** Content formats shown in the picker — the Video / Avatar script is hidden for now. */
+const VISIBLE_CONTENT_TYPES = CONTENT_TYPES.filter((t) => t.key !== "video")
+
 export function EmailCreator({
   companies,
   people,
   analyses,
+  templates,
   preselectedCompanyId,
   preselectedAnalysisId,
 }: {
   companies: Company[]
   people: Person[]
   analyses: Analysis[]
+  templates: Template[]
   preselectedCompanyId?: string
   preselectedAnalysisId?: string
 }) {
@@ -63,6 +70,7 @@ export function EmailCreator({
   const [analysisId, setAnalysisId] = useState<string>(preselectedAnalysisId ?? "")
   const [personId, setPersonId] = useState<string>("")
   const [contentType, setContentType] = useState<ContentTypeKey>("email")
+  const [templateId, setTemplateId] = useState<string>("")
   const [instructions, setInstructions] = useState("")
   const [language, setLanguage] = useState<string>("Auto")
   const [guidance, setGuidance] = useState("")
@@ -92,6 +100,11 @@ export function EmailCreator({
   const selectedPerson = useMemo(
     () => availablePeople.find((p) => p.id === personId),
     [availablePeople, personId],
+  )
+
+  const selectedTemplate = useMemo(
+    () => templates.find((t) => t.id === templateId),
+    [templates, templateId],
   )
 
   function onCompanyChange(nextId: string) {
@@ -125,6 +138,9 @@ export function EmailCreator({
       : ""
     const composedInstructions = [
       instructions.trim(),
+      selectedTemplate
+        ? `[TEMPLATE — используй как базовую структуру письма, сохрани его стиль и логику, подставь плейсхолдеры и адаптируй под компанию/человека]\n${selectedTemplate.text}`
+        : "",
       analysisDigest ? `[ANALYSIS CONTEXT — build the message on this GTM analysis]\n${analysisDigest}` : "",
     ]
       .filter(Boolean)
@@ -266,7 +282,7 @@ export function EmailCreator({
       <section className="flex flex-col gap-2">
         <span className="text-sm font-semibold tracking-tight">Формат</span>
         <div className="flex flex-wrap gap-2">
-          {CONTENT_TYPES.map((type) => {
+          {VISIBLE_CONTENT_TYPES.map((type) => {
             const Icon = ICONS[type.key]
             const active = contentType === type.key
             return (
@@ -304,6 +320,36 @@ export function EmailCreator({
             rows={2}
             className={`${inputClass} resize-none`}
           />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email-template" className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+            <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+            Шаблон <span className="font-normal text-muted-foreground">(по желанию)</span>
+          </label>
+          <select
+            id="email-template"
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            className={inputClass}
+            disabled={templates.length === 0}
+          >
+            <option value="">{templates.length === 0 ? "Нет шаблонов" : "Без шаблона"}</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          {selectedTemplate ? (
+            <p className="line-clamp-3 whitespace-pre-wrap rounded-lg border border-border bg-background px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+              {selectedTemplate.text}
+            </p>
+          ) : (
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              AI возьмёт шаблон за основу и адаптирует его под выбранную компанию и человека.
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">

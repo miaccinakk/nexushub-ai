@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Building2, Users, LineChart, Mail } from "lucide-react"
+import { LayoutDashboard, Building2, Users, LineChart, Mail, FileText } from "lucide-react"
 import { LogoutButton } from "./logout-button"
 
 const NAV = [
@@ -11,6 +11,7 @@ const NAV = [
   { href: "/people", label: "Люди", icon: Users },
   { href: "/analyses", label: "Анализы", icon: LineChart },
   { href: "/emails", label: "Письма", icon: Mail },
+  { href: "/templates", label: "Шаблоны", icon: FileText },
 ]
 
 export function SiteHeader() {
