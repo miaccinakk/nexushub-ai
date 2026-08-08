@@ -1,97 +1,104 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { LineChart, Mail, Globe, Building2, MapPin, Clock, ArrowUpRight, Plus, Pencil } from "lucide-react"
+import { LineChart, Mail, Globe, Briefcase, Clock, ArrowUpRight, Plus, Pencil, LinkIcon } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { PageHeader } from "@/components/page-header"
-import { getLead } from "@/lib/leads-store"
-import { analysesByLead } from "@/lib/analyses-store"
-import { emailsByLead } from "@/lib/emails-store"
+import { getPerson } from "@/lib/people-store"
+import { analysesByPerson } from "@/lib/analyses-store"
+import { emailsByPerson } from "@/lib/emails-store"
 import { formatDate } from "@/lib/format"
 
 export const dynamic = "force-dynamic"
 
-const DETAIL_FIELDS: { key: "productDescription" | "businessGoals" | "additionalInfo" | "links"; label: string }[] = [
-  { key: "productDescription", label: "Что продаём" },
-  { key: "businessGoals", label: "Цель захода" },
+const DETAIL_FIELDS: { key: "bio" | "additionalInfo"; label: string }[] = [
+  { key: "bio", label: "О человеке / характеристики" },
   { key: "additionalInfo", label: "Доп. информация" },
-  { key: "links", label: "Ссылки" },
 ]
 
-export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PersonDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const lead = await getLead(id)
-  if (!lead) notFound()
+  const person = await getPerson(id)
+  if (!person) notFound()
 
-  const [analyses, emails] = await Promise.all([analysesByLead(id), emailsByLead(id)])
+  const [analyses, emails] = await Promise.all([analysesByPerson(id), emailsByPerson(id)])
+  const socialLinks = person.links
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
 
   return (
     <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
         <PageHeader
-          title={lead.name}
-          backHref="/leads"
-          backLabel="К лидам"
+          title={person.name}
+          backHref="/people"
+          backLabel="К людям"
           action={
             <>
               <Link
-                href={`/leads/${lead.id}/edit`}
+                href={`/people/${person.id}/edit`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
               >
                 <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 Редактировать
               </Link>
               <Link
-                href={`/analyses/new?leadId=${lead.id}`}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-              >
-                <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
-                Создать анализ
-              </Link>
-              <Link
-                href={`/emails/new?leadId=${lead.id}`}
+                href={`/analyses/new?personId=${person.id}`}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
               >
-                <Mail className="h-4 w-4" aria-hidden="true" />
-                Создать письмо
+                <LineChart className="h-4 w-4" aria-hidden="true" />
+                Анализ с этим человеком
               </Link>
             </>
           }
         />
 
-        {/* Lead facts */}
+        {/* Person facts */}
         <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-            {lead.website ? (
+            {person.role ? (
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
+                {person.role}
+              </span>
+            ) : null}
+            {person.website ? (
               <span className="flex items-center gap-1.5">
                 <Globe className="h-3.5 w-3.5" aria-hidden="true" />
-                {lead.website}
-              </span>
-            ) : null}
-            {lead.industry ? (
-              <span className="flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {lead.industry}
-              </span>
-            ) : null}
-            {lead.targetMarket ? (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
-                {lead.targetMarket}
+                {person.website}
               </span>
             ) : null}
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-              {formatDate(lead.createdAt)}
+              {formatDate(person.createdAt)}
             </span>
           </div>
 
+          {socialLinks.length > 0 ? (
+            <div className="mt-4 flex flex-col gap-1">
+              <span className="text-xs font-semibold tracking-tight text-foreground">Соцсети</span>
+              <ul className="flex flex-wrap gap-2">
+                {socialLinks.map((link) => (
+                  <li key={link}>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
+                      <LinkIcon className="h-3 w-3" aria-hidden="true" />
+                      {link}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {DETAIL_FIELDS.map((f) =>
-              lead[f.key]?.trim() ? (
+              person[f.key]?.trim() ? (
                 <div key={f.key} className="flex flex-col gap-1">
                   <dt className="text-xs font-semibold tracking-tight text-foreground">{f.label}</dt>
-                  <dd className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{lead[f.key]}</dd>
+                  <dd className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                    {person[f.key]}
+                  </dd>
                 </div>
               ) : null,
             )}
@@ -101,14 +108,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         {/* Analyses */}
         <RelatedSection
           title="Анализы"
-          emptyText="Ещё нет анализов для этого лида."
-          createHref={`/analyses/new?leadId=${lead.id}`}
+          emptyText="Ещё нет анализов с этим человеком."
+          createHref={`/analyses/new?personId=${person.id}`}
           createLabel="Создать анализ"
           icon={<LineChart className="h-4 w-4" aria-hidden="true" />}
           items={analyses.map((a) => ({
             id: a.id,
             href: `/analyses/${a.id}`,
-            title: "Анализ лида",
+            title: a.companyName,
             meta: formatDate(a.createdAt),
           }))}
         />
@@ -116,14 +123,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         {/* Emails */}
         <RelatedSection
           title="Письма"
-          emptyText="Ещё нет писем для этого лида."
-          createHref={`/emails/new?leadId=${lead.id}`}
+          emptyText="Ещё нет писем для этого человека."
+          createHref={`/emails/new?personId=${person.id}`}
           createLabel="Создать письмо"
           icon={<Mail className="h-4 w-4" aria-hidden="true" />}
           items={emails.map((e) => ({
             id: e.id,
             href: `/emails/${e.id}`,
-            title: e.contentLabel,
+            title: `${e.contentLabel} — ${e.companyName}`,
             meta: formatDate(e.createdAt),
           }))}
         />

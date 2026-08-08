@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { readAnalyses, saveAnalysis } from "@/lib/analyses-store"
-import { getLead } from "@/lib/leads-store"
+import { getCompany } from "@/lib/companies-store"
+import { getPeopleByIds } from "@/lib/people-store"
 import { EMPTY_ANALYSIS_CONFIG, type Analysis, type AnalysisConfig, type AnalysisResult } from "@/lib/types"
 
 export async function GET() {
@@ -11,25 +12,31 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
-      leadId: string
+      companyId: string
+      personIds?: string[]
       config: AnalysisConfig
       result: AnalysisResult
     }
 
-    if (!body?.leadId || !body?.result) {
-      return NextResponse.json({ error: "Missing leadId or result." }, { status: 400 })
+    if (!body?.companyId || !body?.result) {
+      return NextResponse.json({ error: "Missing companyId or result." }, { status: 400 })
     }
 
-    const lead = await getLead(body.leadId)
-    if (!lead) {
-      return NextResponse.json({ error: "Lead not found." }, { status: 404 })
+    const company = await getCompany(body.companyId)
+    if (!company) {
+      return NextResponse.json({ error: "Company not found." }, { status: 404 })
     }
+
+    const personIds = Array.isArray(body.personIds) ? body.personIds : []
+    const people = await getPeopleByIds(personIds)
 
     const analysis: Analysis = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      leadId: lead.id,
       createdAt: new Date().toISOString(),
-      leadName: lead.name,
+      companyId: company.id,
+      companyName: company.name,
+      personIds: people.map((p) => p.id),
+      personNames: people.map((p) => p.name),
       config: { ...EMPTY_ANALYSIS_CONFIG, ...body.config },
       result: body.result,
     }

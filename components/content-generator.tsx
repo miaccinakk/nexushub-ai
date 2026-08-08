@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Linkedin, Mail, CalendarDays, Twitter, Lightbulb, Loader2, Sparkles, Clapperboard } from "lucide-react"
-import { CONTENT_TYPES, type ContentTypeKey, type CompanyInput } from "@/lib/types"
+import { CONTENT_TYPES, type ContentTypeKey, type PromptInput } from "@/lib/types"
 import { FormattedText } from "./formatted-text"
 import { CopyButton } from "./copy-button"
 
@@ -15,7 +15,7 @@ const ICONS: Record<ContentTypeKey, typeof Linkedin> = {
   ideas: Lightbulb,
 }
 
-export function ContentGenerator({ input, modelId }: { input: CompanyInput; modelId?: string }) {
+export function ContentGenerator({ input, modelId }: { input: PromptInput; modelId?: string }) {
   const [activeKey, setActiveKey] = useState<ContentTypeKey | null>(null)
   const [loadingKey, setLoadingKey] = useState<ContentTypeKey | null>(null)
   const [outputs, setOutputs] = useState<Partial<Record<ContentTypeKey, string>>>({})

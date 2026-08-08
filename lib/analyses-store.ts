@@ -22,10 +22,16 @@ export async function getAnalysis(id: string): Promise<Analysis | null> {
   return analyses.find((a) => a.id === id) ?? null
 }
 
-/** All analyses that belong to a given lead. */
-export async function analysesByLead(leadId: string): Promise<Analysis[]> {
+/** All analyses that include a given company. */
+export async function analysesByCompany(companyId: string): Promise<Analysis[]> {
   const analyses = await readAnalyses()
-  return analyses.filter((a) => a.leadId === leadId)
+  return analyses.filter((a) => a.companyId === companyId)
+}
+
+/** All analyses that include a given person. */
+export async function analysesByPerson(personId: string): Promise<Analysis[]> {
+  const analyses = await readAnalyses()
+  return analyses.filter((a) => a.personIds?.includes(personId))
 }
 
 /** Append a new analysis to the JSON file and return the persisted record. */

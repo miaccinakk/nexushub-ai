@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, UserPlus, Save } from "lucide-react"
-import { EMPTY_LEAD_INPUT, type LeadInput } from "@/lib/types"
+import { EMPTY_PERSON_INPUT, type PersonInput } from "@/lib/types"
 import { FieldCell } from "./field-cell"
 
 interface FieldDef {
-  key: keyof LeadInput
+  key: keyof PersonInput
   label: string
   placeholder: string
   hint?: string
@@ -16,56 +16,48 @@ interface FieldDef {
 }
 
 const FIELDS: FieldDef[] = [
-  { key: "name", label: "Компания", placeholder: "напр. MedHealth AI" },
-  { key: "website", label: "Сайт", placeholder: "напр. medhealth.ai" },
-  { key: "industry", label: "Отрасль", placeholder: "напр. Healthcare AI" },
-  { key: "targetMarket", label: "Целевой рынок", placeholder: "напр. ОАЭ / MENA" },
-  {
-    key: "productDescription",
-    label: "Что продаём",
-    placeholder: "Что делает продукт и для кого?",
-    type: "textarea",
-    full: true,
-  },
-  {
-    key: "businessGoals",
-    label: "Цель захода",
-    placeholder: "Чего компания пытается достичь этим лидом?",
-    type: "textarea",
-    full: true,
-  },
+  { key: "name", label: "Имя", placeholder: "напр. Ахмед Аль-Мансури" },
+  { key: "role", label: "Роль / должность", placeholder: "напр. CEO, Head of Growth" },
+  { key: "website", label: "Личный сайт", placeholder: "напр. ahmed.dev" },
   {
     key: "links",
-    label: "Ссылки (по желанию)",
-    hint: "По одной в строке — сайт, LinkedIn, X, дек, пресса, доки…",
-    placeholder: "https://…",
+    label: "Соцсети",
+    hint: "По одной в строке — LinkedIn, X, Telegram, Instagram…",
+    placeholder: "https://linkedin.com/in/…",
+    type: "textarea",
+    full: true,
+  },
+  {
+    key: "bio",
+    label: "О человеке / характеристики",
+    placeholder: "Кто это, бэкграунд, что для него важно, особенности…",
     type: "textarea",
     full: true,
   },
   {
     key: "additionalInfo",
     label: "Доп. информация",
-    placeholder: "Что ещё важно знать (раунды, конкуренты, тон)…",
+    placeholder: "Что ещё важно знать (интересы, тон общения, связи)…",
     type: "textarea",
     full: true,
   },
 ]
 
-interface LeadFormProps {
-  /** When provided, the form edits this lead via PUT instead of creating a new one. */
-  leadId?: string
-  /** Initial field values (defaults to an empty lead). */
-  initial?: LeadInput
+interface PersonFormProps {
+  /** When provided, the form edits this person via PUT instead of creating a new one. */
+  personId?: string
+  /** Initial field values (defaults to an empty person). */
+  initial?: PersonInput
 }
 
-export function LeadForm({ leadId, initial }: LeadFormProps) {
+export function PersonForm({ personId, initial }: PersonFormProps) {
   const router = useRouter()
-  const isEdit = Boolean(leadId)
-  const [input, setInput] = useState<LeadInput>(initial ?? EMPTY_LEAD_INPUT)
+  const isEdit = Boolean(personId)
+  const [input, setInput] = useState<PersonInput>(initial ?? EMPTY_PERSON_INPUT)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  function update(key: keyof LeadInput, value: string) {
+  function update(key: keyof PersonInput, value: string) {
     setInput((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -75,20 +67,20 @@ export function LeadForm({ leadId, initial }: LeadFormProps) {
     setSaving(true)
     setError(null)
     try {
-      const res = await fetch(isEdit ? `/api/leads/${leadId}` : "/api/leads", {
+      const res = await fetch(isEdit ? `/api/people/${personId}` : "/api/people", {
         method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input }),
       })
       if (!res.ok) throw new Error("Request failed")
-      const data = (await res.json()) as { lead: { id: string } }
-      router.push(`/leads/${data.lead.id}`)
+      const data = (await res.json()) as { person: { id: string } }
+      router.push(`/people/${data.person.id}`)
       router.refresh()
     } catch {
       setError(
         isEdit
           ? "Не удалось сохранить изменения. Попробуй ещё раз."
-          : "Не удалось сохранить лид. Попробуй ещё раз.",
+          : "Не удалось сохранить человека. Попробуй ещё раз.",
       )
       setSaving(false)
     }
@@ -132,7 +124,7 @@ export function LeadForm({ leadId, initial }: LeadFormProps) {
         ) : (
           <>
             <UserPlus className="h-4 w-4" aria-hidden="true" />
-            Создать лид
+            Создать человека
           </>
         )}
       </button>
