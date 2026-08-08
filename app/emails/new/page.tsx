@@ -4,6 +4,7 @@ import { EmailCreator } from "@/components/email-creator"
 import { readCompanies } from "@/lib/companies-store"
 import { readPeople } from "@/lib/people-store"
 import { readAnalyses } from "@/lib/analyses-store"
+import { readTemplates } from "@/lib/templates-store"
 
 export const dynamic = "force-dynamic"
 
@@ -12,11 +13,12 @@ export default async function NewEmailPage({
 }: {
   searchParams: Promise<{ companyId?: string; analysisId?: string }>
 }) {
-  const [{ companyId, analysisId }, companies, people, analyses] = await Promise.all([
+  const [{ companyId, analysisId }, companies, people, analyses, templates] = await Promise.all([
     searchParams,
     readCompanies(),
     readPeople(),
     readAnalyses(),
+    readTemplates(),
   ])
 
   return (
@@ -33,6 +35,7 @@ export default async function NewEmailPage({
           companies={companies}
           people={people}
           analyses={analyses}
+          templates={templates}
           preselectedCompanyId={companyId}
           preselectedAnalysisId={analysisId}
         />

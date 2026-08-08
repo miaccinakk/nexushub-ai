@@ -145,6 +145,28 @@ export interface Email {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Template                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** A reusable text template persisted to data/templates.json. */
+export interface Template {
+  id: string
+  createdAt: string
+  /** Short name shown in lists and the picker. */
+  name: string
+  /** The template body — plain text the AI adapts when writing an email. */
+  text: string
+}
+
+/** Fields a user fills when creating a Template. */
+export type TemplateInput = Omit<Template, "id" | "createdAt">
+
+export const EMPTY_TEMPLATE_INPUT: TemplateInput = {
+  name: "",
+  text: "",
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Prompt input                                                               */
 /* -------------------------------------------------------------------------- */
 
