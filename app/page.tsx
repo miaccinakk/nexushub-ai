@@ -1,21 +1,28 @@
 import Link from "next/link"
-import { Users, LineChart, Mail } from "lucide-react"
+import { Building2, Users, LineChart, Mail } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { DashboardFeed } from "@/components/dashboard-feed"
-import { readLeads } from "@/lib/leads-store"
+import { readCompanies } from "@/lib/companies-store"
+import { readPeople } from "@/lib/people-store"
 import { readAnalyses } from "@/lib/analyses-store"
 import { readEmails } from "@/lib/emails-store"
 
 export const dynamic = "force-dynamic"
 
 const QUICK_ACTIONS = [
-  { href: "/leads/new", label: "Новый лид", icon: Users },
+  { href: "/companies/new", label: "Новая компания", icon: Building2 },
+  { href: "/people/new", label: "Новый человек", icon: Users },
   { href: "/analyses/new", label: "Новый анализ", icon: LineChart },
   { href: "/emails/new", label: "Новое письмо", icon: Mail },
 ]
 
 export default async function HomePage() {
-  const [leads, analyses, emails] = await Promise.all([readLeads(), readAnalyses(), readEmails()])
+  const [companies, people, analyses, emails] = await Promise.all([
+    readCompanies(),
+    readPeople(),
+    readAnalyses(),
+    readEmails(),
+  ])
 
   return (
     <div className="min-h-dvh">
@@ -25,7 +32,7 @@ export default async function HomePage() {
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-semibold tracking-tight text-balance">Дашборд</h1>
             <p className="text-sm text-muted-foreground text-pretty">
-              Лиды, их анализ и письма — всё в одном месте.
+              Компании, люди, их анализ и письма — всё в одном месте.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -45,7 +52,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <DashboardFeed leads={leads} analyses={analyses} emails={emails} />
+        <DashboardFeed companies={companies} people={people} analyses={analyses} emails={emails} />
       </main>
     </div>
   )

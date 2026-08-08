@@ -2,12 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, LineChart, Mail } from "lucide-react"
+import { LayoutDashboard, Building2, Users, LineChart, Mail } from "lucide-react"
 import { LogoutButton } from "./logout-button"
 
 const NAV = [
   { href: "/", label: "Дашборд", icon: LayoutDashboard, exact: true },
-  { href: "/leads", label: "Лиды", icon: Users },
+  { href: "/companies", label: "Компании", icon: Building2 },
+  { href: "/people", label: "Люди", icon: Users },
   { href: "/analyses", label: "Анализы", icon: LineChart },
   { href: "/emails", label: "Письма", icon: Mail },
 ]

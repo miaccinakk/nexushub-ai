@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
 import { generateAIResponse } from "@/lib/ai"
 import { buildContentPrompt, buildSectionPrompt } from "@/lib/prompts"
-import type { CompanyInput } from "@/lib/types"
+import type { PromptInput } from "@/lib/types"
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       kind: "section" | "content"
       task: string
-      input: CompanyInput
+      input: PromptInput
       instructions?: string
       modelId?: string
     }

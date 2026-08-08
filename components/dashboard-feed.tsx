@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Users, LineChart, Mail, Globe, Building2, Clock, ArrowUpRight } from "lucide-react"
-import type { Analysis, Email, EntityType, Lead } from "@/lib/types"
+import { Building2, User, LineChart, Mail, Globe, Briefcase, Clock, ArrowUpRight } from "lucide-react"
+import type { Analysis, Company, Email, EntityType, Person } from "@/lib/types"
 import { formatDate } from "@/lib/format"
 
 interface FeedItem {
@@ -11,71 +11,82 @@ interface FeedItem {
   type: EntityType
   title: string
   subtitle: string
-  meta?: string
   createdAt: string
   href: string
 }
 
-const TYPE_META: Record<EntityType, { label: string; icon: typeof Users; className: string }> = {
-  lead: { label: "Лид", icon: Users, className: "bg-primary/10 text-primary" },
-  analysis: { label: "Анализ", icon: LineChart, className: "bg-accent/20 text-accent-foreground" },
-  email: { label: "Письмо", icon: Mail, className: "bg-dark/10 text-dark" },
+const TYPE_META: Record<EntityType, { label: string; icon: typeof Building2; subIcon: typeof Globe; className: string }> = {
+  company: { label: "Компания", icon: Building2, subIcon: Globe, className: "bg-primary/10 text-primary" },
+  person: { label: "Человек", icon: User, subIcon: Briefcase, className: "bg-dark/10 text-dark" },
+  analysis: { label: "Анализ", icon: LineChart, subIcon: Building2, className: "bg-accent/20 text-accent-foreground" },
+  email: { label: "Письмо", icon: Mail, subIcon: Building2, className: "bg-primary/10 text-primary" },
 }
 
 const FILTERS: { key: EntityType | "all"; label: string }[] = [
   { key: "all", label: "Все" },
-  { key: "lead", label: "Лиды" },
+  { key: "company", label: "Компании" },
+  { key: "person", label: "Люди" },
   { key: "analysis", label: "Анализы" },
   { key: "email", label: "Письма" },
 ]
 
 export function DashboardFeed({
-  leads,
+  companies,
+  people,
   analyses,
   emails,
 }: {
-  leads: Lead[]
+  companies: Company[]
+  people: Person[]
   analyses: Analysis[]
   emails: Email[]
 }) {
   const [filter, setFilter] = useState<EntityType | "all">("all")
 
   const items = useMemo<FeedItem[]>(() => {
-    const leadItems: FeedItem[] = leads.map((l) => ({
-      id: l.id,
-      type: "lead",
-      title: l.name,
-      subtitle: l.website || l.industry || "Лид",
-      meta: l.industry || undefined,
-      createdAt: l.createdAt,
-      href: `/leads/${l.id}`,
+    const companyItems: FeedItem[] = companies.map((c) => ({
+      id: c.id,
+      type: "company",
+      title: c.name,
+      subtitle: c.website || c.industry || "Компания",
+      createdAt: c.createdAt,
+      href: `/companies/${c.id}`,
+    }))
+    const personItems: FeedItem[] = people.map((p) => ({
+      id: p.id,
+      type: "person",
+      title: p.name,
+      subtitle: p.role || "Человек",
+      createdAt: p.createdAt,
+      href: `/people/${p.id}`,
     }))
     const analysisItems: FeedItem[] = analyses.map((a) => ({
       id: a.id,
       type: "analysis",
-      title: a.leadName,
-      subtitle: "Анализ лида",
+      title: a.companyName,
+      subtitle: a.personNames.length > 0 ? a.personNames.join(", ") : "Только по компании",
       createdAt: a.createdAt,
       href: `/analyses/${a.id}`,
     }))
     const emailItems: FeedItem[] = emails.map((e) => ({
       id: e.id,
       type: "email",
-      title: e.leadName,
+      title: e.companyName,
       subtitle: e.contentLabel,
       createdAt: e.createdAt,
       href: `/emails/${e.id}`,
     }))
-    return [...leadItems, ...analysisItems, ...emailItems].sort((a, b) =>
+    return [...companyItems, ...personItems, ...analysisItems, ...emailItems].sort((a, b) =>
       b.createdAt.localeCompare(a.createdAt),
     )
-  }, [leads, analyses, emails])
+  }, [companies, people, analyses, emails])
 
   const filtered = filter === "all" ? items : items.filter((i) => i.type === filter)
 
   const counts = {
     all: items.length,
-    lead: leads.length,
+    company: companies.length,
+    person: people.length,
     analysis: analyses.length,
     email: emails.length,
   }
@@ -114,14 +125,14 @@ export function DashboardFeed({
         <div className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-12 text-center">
           <p className="text-sm font-medium text-foreground">Пока пусто</p>
           <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
-            Начни с создания лида — на его основе появятся анализы и письма.
+            Начни с создания компании и людей — на их основе появятся анализы и письма.
           </p>
           <Link
-            href="/leads/new"
+            href="/companies/new"
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
           >
-            <Users className="h-4 w-4" aria-hidden="true" />
-            Создать лид
+            <Building2 className="h-4 w-4" aria-hidden="true" />
+            Создать компанию
           </Link>
         </div>
       ) : (
@@ -129,6 +140,7 @@ export function DashboardFeed({
           {filtered.map((item) => {
             const meta = TYPE_META[item.type]
             const Icon = meta.icon
+            const SubIcon = meta.subIcon
             return (
               <li key={`${item.type}-${item.id}`}>
                 <Link
@@ -149,13 +161,9 @@ export function DashboardFeed({
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          {item.type === "lead" ? (
-                            <Globe className="h-3 w-3" aria-hidden="true" />
-                          ) : (
-                            <Building2 className="h-3 w-3" aria-hidden="true" />
-                          )}
-                          {item.subtitle}
+                        <span className="flex min-w-0 items-center gap-1">
+                          <SubIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                          <span className="truncate">{item.subtitle}</span>
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" aria-hidden="true" />

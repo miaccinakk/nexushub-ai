@@ -16,7 +16,7 @@ export default async function EmailsPage() {
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
         <PageHeader
           title="Письма"
-          subtitle="Готовый outreach-контент. Третий уровень — на основе лида и, по желанию, его анализа."
+          subtitle="Готовый outreach-контент — на основе компании и, по желанию, человека и анализа."
           action={
             <Link
               href="/emails/new"
@@ -35,7 +35,7 @@ export default async function EmailsPage() {
             </span>
             <p className="mt-3 text-sm font-medium text-foreground">Пока нет писем</p>
             <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
-              Выбери лид (и при желании его анализ) — соберём письмо под нужный формат.
+              Выбери компанию (и при желании человека и анализ) — соберём письмо под нужный формат.
             </p>
             <Link
               href="/emails/new"
@@ -60,7 +60,8 @@ export default async function EmailsPage() {
                     <div className="flex min-w-0 flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-semibold tracking-tight text-card-foreground">
-                          {e.leadName}
+                          {e.companyName}
+                          {e.personName ? ` · ${e.personName}` : ""}
                         </span>
                         <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                           {e.contentLabel}
