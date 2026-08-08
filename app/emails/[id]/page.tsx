@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Users, LineChart, Clock } from "lucide-react"
+import { Building2, User, LineChart, Clock } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { PageHeader } from "@/components/page-header"
 import { FormattedText } from "@/components/formatted-text"
@@ -19,16 +19,25 @@ export default async function EmailDetailPage({ params }: { params: Promise<{ id
     <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
-        <PageHeader title={`${email.contentLabel}: ${email.leadName}`} backHref="/emails" backLabel="К письмам" />
+        <PageHeader title={`${email.contentLabel}: ${email.companyName}`} backHref="/emails" backLabel="К письмам" />
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
           <Link
-            href={`/leads/${email.leadId}`}
+            href={`/companies/${email.companyId}`}
             className="inline-flex items-center gap-1.5 text-primary transition-colors hover:opacity-80"
           >
-            <Users className="h-3.5 w-3.5" aria-hidden="true" />
-            {email.leadName}
+            <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+            {email.companyName}
           </Link>
+          {email.personId ? (
+            <Link
+              href={`/people/${email.personId}`}
+              className="inline-flex items-center gap-1.5 text-primary transition-colors hover:opacity-80"
+            >
+              <User className="h-3.5 w-3.5" aria-hidden="true" />
+              {email.personName}
+            </Link>
+          ) : null}
           {email.analysisId ? (
             <Link
               href={`/analyses/${email.analysisId}`}
