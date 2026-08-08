@@ -1,7 +1,8 @@
 import { SiteHeader } from "@/components/site-header"
 import { PageHeader } from "@/components/page-header"
 import { EmailCreator } from "@/components/email-creator"
-import { readLeads } from "@/lib/leads-store"
+import { readCompanies } from "@/lib/companies-store"
+import { readPeople } from "@/lib/people-store"
 import { readAnalyses } from "@/lib/analyses-store"
 
 export const dynamic = "force-dynamic"
@@ -9,11 +10,12 @@ export const dynamic = "force-dynamic"
 export default async function NewEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ leadId?: string; analysisId?: string }>
+  searchParams: Promise<{ companyId?: string; analysisId?: string }>
 }) {
-  const [{ leadId, analysisId }, leads, analyses] = await Promise.all([
+  const [{ companyId, analysisId }, companies, people, analyses] = await Promise.all([
     searchParams,
-    readLeads(),
+    readCompanies(),
+    readPeople(),
     readAnalyses(),
   ])
 
@@ -23,14 +25,15 @@ export default async function NewEmailPage({
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
         <PageHeader
           title="Новое письмо"
-          subtitle="Выбери лид и, при желании, его анализ. Дальше — формат, инструкции и генерация."
+          subtitle="Выбери компанию и, при желании, анализ и человека. Дальше — формат, инструкции и генерация."
           backHref="/emails"
           backLabel="К письмам"
         />
         <EmailCreator
-          leads={leads}
+          companies={companies}
+          people={people}
           analyses={analyses}
-          preselectedLeadId={leadId}
+          preselectedCompanyId={companyId}
           preselectedAnalysisId={analysisId}
         />
       </main>
